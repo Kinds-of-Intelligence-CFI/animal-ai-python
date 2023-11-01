@@ -22,5 +22,5 @@ setup(
                       "numpy==1.21.2",
                       "scipy==1.7.2",
                       "pandas== 1.3.2"],
-    python_requires=">=3.6",
+    python_requires="==3.9",
 )
