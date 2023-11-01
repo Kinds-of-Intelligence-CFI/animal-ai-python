@@ -24,5 +24,4 @@ setup(
                       "shimmy== 1.3.0",
                       "notebook"],
     python_requires=">=3.9, <3.10",
-    entry_points={"console_scripts": ["animalai = animalai-package.main:main"]},
 )
