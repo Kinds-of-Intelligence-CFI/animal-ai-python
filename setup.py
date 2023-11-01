@@ -4,7 +4,7 @@ setup(
     name="animalai",
     version="3.0.0",
     description="Animal AI environment Python API",
-    url="https://github.com/Kinds-of-Intelligence-CFI/animalai-package",
+    url="https://github.com/Kinds-of-Intelligence-CFI/",
     author="Matt Crosby; Ibrahim Alhas; K. Voudouris; W. Schellaert",
     author_email="kindsofintelligence.cfi@gmail.com",
     classifiers=[
