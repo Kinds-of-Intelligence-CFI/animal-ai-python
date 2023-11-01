@@ -18,7 +18,7 @@ jobs:
         
         environment:
           name: pypi
-          url: https://pypi.org/p/<your-pypi-project-name>
+          url: https://pypi.org/p/animalai
         permissions:
           id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
         
