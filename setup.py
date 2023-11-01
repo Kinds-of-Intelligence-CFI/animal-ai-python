@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="animalai",
-    version="3.0.0",
+    version="3.0.1",
     description="Animal AI environment Python API",
     url="https://github.com/Kinds-of-Intelligence-CFI/animalai-package",
     author="Matt Crosby; Ibrahim Alhas; K. Voudouris; W. Schellaert",
