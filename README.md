@@ -2,7 +2,9 @@
 
 Animal-AI (3) Python Project
 
-This repository is responsible for managing and updating primarily the PyPi package (https://pypi.org/project/animalai/) for Animal-AI project dependencies. The main project is located here: https://github.com/Kinds-of-Intelligence-CFI/animal-ai.
+This repository is responsible for managing and updating primarily the PyPi package (https://pypi.org/project/animalai/) for Animal-AI project dependencies. 
+
+The main project is located here: https://github.com/Kinds-of-Intelligence-CFI/animal-ai.
 
 The Animal-AI (3) Unity project repository is here: https://github.com/Kinds-of-Intelligence-CFI/animal-ai-unity-project.
 
