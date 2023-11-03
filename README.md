@@ -2,7 +2,7 @@
 ![steampunkFOURcrop](https://github.com/Kinds-of-Intelligence-CFI/animal-ai/assets/65875290/df798f4a-cb2c-416f-a150-093b9382a621)
 Animal-AI (3) Python Project
 
-This repository is responsible for managing and updating primarily the PyPi package (https://pypi.org/project/animalai/) for Animal-AI project package dependencies. 
+This repository is responsible for managing and updating primarily the PyPI package (https://pypi.org/project/animalai/) for Animal-AI project package dependencies. 
 
 The main project is located here: https://github.com/Kinds-of-Intelligence-CFI/animal-ai.
 
