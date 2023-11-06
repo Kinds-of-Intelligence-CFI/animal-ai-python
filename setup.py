@@ -5,6 +5,7 @@ setup(
     version="3.0.3",
     description="Animal AI 3 Python API",
     long_description= open('README.md').read(),
+    long_description_content_type = 'text/markdown',
     url="https://github.com/Kinds-of-Intelligence-CFI/animalai-package",
     author="Matt Crosby; Ibrahim Alhas; K. Voudouris; W. Schellaert",
     author_email="kindsofintelligence.cfi@gmail.com",
