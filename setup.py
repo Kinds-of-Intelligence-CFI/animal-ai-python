@@ -2,18 +2,26 @@ from setuptools import setup, find_packages
 
 setup(
     name="animalai",
-    version="3.0.3",
+    version="3.0.4",
     description="Animal AI 3 Python API",
     long_description= open('README.md').read(),
     long_description_content_type = 'text/markdown',
     url="https://github.com/Kinds-of-Intelligence-CFI/animalai-package",
-    author="Matt Crosby; Ibrahim Alhas; K. Voudouris; W. Schellaert",
+    author="Matt Crosby; Ibrahim Alhas; Konstantinos Voudouris; Wout Schellaert; Joel Holmes; Ben Beyret",
     author_email="kindsofintelligence.cfi@gmail.com",
     classifiers=[
         "Intended Audience :: Developers",
+        "Intended Audience :: Science/Research",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
         "License :: OSI Approved :: Apache Software License",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Operating System :: Microsoft :: Windows :: Windows 10",
+        "Operating System :: Microsoft :: Windows :: Windows 11",
+        "Operating System :: MacOS :: MacOS X",
+        "Operating System :: POSIX :: Linux"
     ],
     packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
     zip_safe=False,
@@ -25,5 +33,5 @@ setup(
                       "stable-baselines3== 2.1.0",
                       "shimmy== 1.3.0",
                       "notebook"],
-    python_requires=">=3.9, <3.10",
+    python_requires=">=3.6, <3.10",
 )
