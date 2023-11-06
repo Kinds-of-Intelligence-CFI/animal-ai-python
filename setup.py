@@ -2,8 +2,9 @@ from setuptools import setup, find_packages
 
 setup(
     name="animalai",
-    version="3.0.2",
+    version="3.0.3",
     description="Animal AI 3 Python API",
+    long_description= open('README.md').read(),
     url="https://github.com/Kinds-of-Intelligence-CFI/animalai-package",
     author="Matt Crosby; Ibrahim Alhas; K. Voudouris; W. Schellaert",
     author_email="kindsofintelligence.cfi@gmail.com",

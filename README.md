@@ -10,6 +10,9 @@ The Animal-AI (3) Unity project repository is here: https://github.com/Kinds-of-
 
 ## Version History
 
+- v3.0.3
+  - Asserted python version to be 3.6.1 or higher, but less than 3.10.0 (exclusive).
+  - Added package description to setup.py and package metadata.
 - v3.0.2
   - Fixed major pacakge dependency issues, related to mlagents 0.30.0, protopuf, and shimy.
   - Updated project setup.py to accomodate the latest version of Animal-AI package dependencies.
