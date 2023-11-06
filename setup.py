@@ -23,6 +23,12 @@ setup(
         "Operating System :: MacOS :: MacOS X",
         "Operating System :: POSIX :: Linux"
     ],
+    project_urls={
+        "Website": "https://sites.google.com/csah.cam.ac.uk/animalai",
+        "Main Repository": "https://github.com/Kinds-of-Intelligence-CFI/animal-ai",
+        "Releases": "https://github.com/Kinds-of-Intelligence-CFI/animal-ai/releases",#
+        "Documentation": "https://github.com/Kinds-of-Intelligence-CFI/animal-ai/tree/main/docs"
+    },
     packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
     zip_safe=False,
     install_requires=["mlagents==0.30.0",
