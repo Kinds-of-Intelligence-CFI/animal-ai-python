@@ -10,9 +10,9 @@ The Animal-AI (3) Unity project repository is located [here](https://github.com/
 
 - **Website:** [https://www.animalai.org](https://animalai.org/)
 - **Documentation:** [https://animalai.org/doc](https://github.com/Kinds-of-Intelligence-CFI/animal-ai/tree/main/docs)
-- **Unity Source code:** [https://github.com/numpy/numpy](https://github.com/Kinds-of-Intelligence-CFI/animal-ai-unity-project/tree/main/Assets)
+- **Unity Source code:** [https://github.com/Kinds-of-Intelligence-CFI/animal-ai-unity-project](https://github.com/Kinds-of-Intelligence-CFI/animal-ai-unity-project)
 -  **Python Source code:** [https://github.com/Kinds-of-Intelligence-CFI/animal-ai-package/tree/main/animalai](https://github.com/Kinds-of-Intelligence-CFI/animal-ai-package/tree/main/animalai)
-- **Bug reports:** [https://github.com/numpy/numpy/issues](https://github.com/Kinds-of-Intelligence-CFI/animal-ai/issues)
+- **Bug reports:** [https://github.com/Kinds-of-Intelligence-CFI/animal-ai/issues](https://github.com/Kinds-of-Intelligence-CFI/animal-ai/issues)
 
 For more information about the ways you can contribute to AnimalAI, visit our website. If you’re unsure where to start or how your skills fit in, reach out! You can ask on GitHub, by opening a new issue or leaving a comment on a relevant issue that is already open.
 
