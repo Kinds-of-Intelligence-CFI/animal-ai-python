@@ -34,7 +34,7 @@ setup(
     install_requires=[
         "mlagents==0.30.0",
         "protobuf==3.20.3",
-        "numpy",
+        "numpy==1.21.2",
     ],
     python_requires=">=3.6, <3.10",
 )
