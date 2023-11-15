@@ -4,8 +4,8 @@ setup(
     name="animalai",
     version="3.0.5",
     description="Animal AI 3 Python API",
-    long_description=open("README.md").read(),
-    long_description_content_type="text/markdown",
+    long_description=open('README.md').read(),
+    long_description_content_type='text/markdown',
     url="https://github.com/Kinds-of-Intelligence-CFI/animalai-package",
     author="Matt Crosby; Ibrahim Alhas; Konstantinos Voudouris; Wout Schellaert; Joel Holmes; Ben Beyret",
     author_email="kindsofintelligence.cfi@gmail.com",
@@ -26,7 +26,7 @@ setup(
     project_urls={
         "Website": "https://sites.google.com/csah.cam.ac.uk/animalai",
         "Main Repository": "https://github.com/Kinds-of-Intelligence-CFI/animal-ai",
-        "Releases": "https://github.com/Kinds-of-Intelligence-CFI/animal-ai/releases",  #
+        "Releases": "https://github.com/Kinds-of-Intelligence-CFI/animal-ai/releases",
         "Documentation": "https://github.com/Kinds-of-Intelligence-CFI/animal-ai/tree/main/docs",
     },
     packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
