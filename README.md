@@ -8,6 +8,10 @@ The main project repository is located [here](https://github.com/Kinds-of-Intell
 
 The Animal-AI (3) Unity project repository is located [here](https://github.com/Kinds-of-Intelligence-CFI/animal-ai-unity-project)
 
+![PyPI Downloads](https://img.shields.io/pypi/dm/animalai) | ![PyPI Downloads](https://img.shields.io/pypi/dw/animalai) | ![PyPI Downloads](https://img.shields.io/pypi/dd/animalai)
+
+
+
 - **Website:** [https://www.animalai.org](https://animalai.org/)
 - **Documentation:** [https://animalai.org/doc](https://github.com/Kinds-of-Intelligence-CFI/animal-ai/tree/main/docs)
 - **Unity Source code:** [https://github.com/Kinds-of-Intelligence-CFI/animal-ai-unity-project](https://github.com/Kinds-of-Intelligence-CFI/animal-ai-unity-project)
