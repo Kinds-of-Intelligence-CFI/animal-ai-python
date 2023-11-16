@@ -21,6 +21,7 @@ If you are new to contributing to open source, [this](https://opensource.guide/h
 ## Version History
 - v3.0.5
   - Removed redundant packages in setup.py.
+  - Added monthly download stats.
 - v3.0.4
   - Added current and past contributers.
   - Added project description and metadata.
