@@ -1,4 +1,5 @@
 from setuptools import setup, find_packages
+!([PyPI Downloads]https://img.shields.io/pypi/dm/animalai)
 
 setup(
     name="animalai",
