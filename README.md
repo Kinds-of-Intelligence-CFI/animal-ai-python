@@ -1,4 +1,4 @@
-# AnimalAI
+# Animal-AI
 ![steampunkFOURcrop](https://github.com/Kinds-of-Intelligence-CFI/animal-ai/assets/65875290/df798f4a-cb2c-416f-a150-093b9382a621)
 Animal-AI (3) Python Project
 
@@ -6,11 +6,9 @@ This repository is responsible for managing and updating primarily the PyPI pack
 
 The main project repository is located [here](https://github.com/Kinds-of-Intelligence-CFI/animal-ai)
 
-The Animal-AI (3) Unity project repository is located [here](https://github.com/Kinds-of-Intelligence-CFI/animal-ai-unity-project)
+The Animal-AI Unity project repository is located [here](https://github.com/Kinds-of-Intelligence-CFI/animal-ai-unity-project)
 
 ![PyPI Downloads](https://img.shields.io/pypi/dm/animalai) | ![PyPI Downloads](https://img.shields.io/pypi/dw/animalai) | ![PyPI Downloads](https://img.shields.io/pypi/dd/animalai)
-
-
 
 - **Website:** [https://www.animalai.org](https://animalai.org/)
 - **Documentation:** [https://animalai.org/doc](https://github.com/Kinds-of-Intelligence-CFI/animal-ai/tree/main/docs)
@@ -18,7 +16,7 @@ The Animal-AI (3) Unity project repository is located [here](https://github.com/
 -  **Python Source code:** [https://github.com/Kinds-of-Intelligence-CFI/animal-ai-package/tree/main/animalai](https://github.com/Kinds-of-Intelligence-CFI/animal-ai-package/tree/main/animalai)
 - **Bug reports:** [https://github.com/Kinds-of-Intelligence-CFI/animal-ai/issues](https://github.com/Kinds-of-Intelligence-CFI/animal-ai/issues)
 
-For more information about the ways you can contribute to AnimalAI, visit our website. If you’re unsure where to start or how your skills fit in, reach out! You can ask on GitHub, by opening a new issue or leaving a comment on a relevant issue that is already open.
+For more information about the ways you can contribute to Animal-AI, visit our website. If you’re unsure where to start or how your skills fit in, reach out! You can ask on GitHub, by opening a new issue or leaving a comment on a relevant issue that is already open.
 
 If you are new to contributing to open source, [this](https://opensource.guide/how-to-contribute/) guide helps explain why, what, and how to successfully get involved.
 
