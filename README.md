@@ -33,4 +33,4 @@ If you are new to contributing to open source, [this](https://opensource.guide/h
 - v3.0.2
   - Fixed major pacakge dependency issues, related to mlagents 0.30.0, protopuf, and shimy.
   - Updated project setup.py to accomodate the latest version of Animal-AI package dependencies.
-    - Users can now use # pip install animalai # to install from PyPI directly (previously had to be done via locally). 
+    - Users can now use # pip install animalai # to install latest version of Animal-AI from PyPI effortlessly. 
