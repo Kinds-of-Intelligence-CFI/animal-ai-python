@@ -2,8 +2,8 @@ from setuptools import setup, find_packages
 
 setup(
     name="animalai",
-    version="3.0.5",
-    description="Animal AI 3 Python API",
+    version="3.0.6",
+    description="Animal AI Python API",
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     url="https://github.com/Kinds-of-Intelligence-CFI/animalai-package",
@@ -35,6 +35,8 @@ setup(
         "mlagents==0.30.0",
         "protobuf==3.20.3",
         "numpy==1.21.2",
+        # For OpenAI Gym(nasium) environments. Stable-Baselines3 (SB3) has transitioned to using Gymnasium internally. Requires Shimmy.
+        "shimmy== 1.3.0",
     ],
     python_requires=">=3.6, <3.10",
 )
