@@ -2,11 +2,7 @@
 ![steampunkFOURcrop](https://github.com/Kinds-of-Intelligence-CFI/animal-ai/assets/65875290/df798f4a-cb2c-416f-a150-093b9382a621)
 Animal-AI Python Project
 
-This repository is responsible for managing and updating primarily the PyPI package (https://pypi.org/project/animalai/) for Animal-AI package dependencies. 
-
-The main project repository is located [here](https://github.com/Kinds-of-Intelligence-CFI/animal-ai)
-
-The Animal-AI Unity project repository is located [here](https://github.com/Kinds-of-Intelligence-CFI/animal-ai-unity-project)
+The main Animal-AI repository is located [here](https://github.com/Kinds-of-Intelligence-CFI/animal-ai)
 
 ![PyPI Downloads](https://img.shields.io/pypi/dm/animalai) ![PyPI Downloads](https://img.shields.io/pypi/dw/animalai) ![PyPI Downloads](https://img.shields.io/pypi/dd/animalai)
 
@@ -21,6 +17,8 @@ For more information about the ways you can contribute to Animal-AI, visit our w
 If you are new to contributing to open source, [this](https://opensource.guide/how-to-contribute/) guide helps explain why, what, and how to successfully get involved.
 
 ## Version History
+- v3.0.6
+  - Fixed dependency requirement for running an OpenAI Gym session.
 - v3.0.5
   - Removed redundant packages in setup.py.
   - Added download stats.
