@@ -35,8 +35,10 @@ setup(
         "mlagents==0.30.0",
         "protobuf==3.20.3",
         "numpy==1.21.2",
-        # For OpenAI Gym(nasium) environments. Stable-Baselines3 (SB3) has transitioned to using Gymnasium internally. Requires Shimmy.
-        "shimmy== 1.3.0",
     ],
+    # For OpenAI Gym(nasium) environments. Stable-Baselines3 (SB3) has transitioned to using Gymnasium internally. Requires Shimmy. Currently an optional and can be used like so: pip install animalai[shimmy]'.
+    extras_require={
+        'shimmy': ['shimmy==1.3.0'],
+    },
     python_requires=">=3.6, <3.10",
 )
