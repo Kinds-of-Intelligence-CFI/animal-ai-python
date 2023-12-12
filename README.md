@@ -25,26 +25,39 @@ If you are new to contributing to open source, [this](https://opensource.guide/h
 
 [Stable Baselines3](https://stable-baselines3.readthedocs.io/en/master/) works against the [Gymnasium](https://gymnasium.farama.org/) interface ([source](https://stable-baselines3.readthedocs.io/en/master/guide/custom_env.html#using-custom-environments)), while the AnimalAI implements an older (<0.26) [Gym](https://github.com/openai/gym/releases/tag/v0.21.0) interface ([compatibility notes](https://gymnasium.farama.org/content/migration-guide/)).
 
-You can make it all work together with something like [Shimmy](https://shimmy.farama.org/), but Gymnasium has a built in [compatibility wrapper](https://gymnasium.farama.org/api/wrappers/misc_wrappers/#gymnasium.wrappers.EnvCompatibility), so you can just use that.
+Stable Baselines3 will automatically convert between the two interfaces using [Shimmy](https://shimmy.farama.org/), which needs to be installed separately.
 
-Install your dependencies `pip install animalai gymnasium stable-baselines3`, and use following code:
+Install your dependencies `pip install animalai stable-baselines3 shimmy`, and use following code:
 
 ```python
 # Import the necessary environment wrappers.
-# ml_agents is installed by animalai
-from mlagents_envs.envs.unity_gym_env import UnityToGymWrapper
-from gym.wrappers.compatibility import EnvCompatibility
-from animalai.envs.environment import AnimalAIEnvironment
+import animalai
+import animalai.envs.environment
+import mlagents_envs # Provided by animalai
+import mlagents_envs.envs.unity_gym_env
+import stable_baselines3
 
-env = AnimalAIEnvironment(...)
+env = animalai.envs.environment.AnimalAIEnvironment(...)
 
-# This makes it a Stable Baselines3 compatible environment
-# Note that you might have to change some of the options depending on whether you use visual observations, whether there is support for hierarchical actions, etc.
-env = UnityToGymWrapper(env)
-env = EnvCompatibility(env)
+# Make it compatible with legacy Gym v0.21 API
+env = mlagents_envs.envs.unity_gym_env.UnityToGymWrapper(
+    env,
+    uint8_visual=True,
+    flatten_branched=True,  # Necessary if the agent doesn't support MultiDiscrete action space.
+)
 
-# ... your Stable Baselines3 code here ...
+# Stable Baselines3 A2C model
+# Will automatically use Shimmy to convert the legacy Gym v0.21 API to the Gymnasium API
+model = stable_baselines3.A2C(
+    "MlpPolicy",
+    env,  # type: ignore
+    device="cpu",
+    verbose=1,
+)
+model.learn(total_timesteps=10_000)
 ```
+
+See also <https://github.com/Kinds-of-Intelligence-CFI/animal-ai-stablebaselines3> for a complete example.
 
 ## AnimalAI with DreamerV3
 
