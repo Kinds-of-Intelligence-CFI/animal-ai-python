@@ -1,6 +1,6 @@
-from animalai.envs.actions import AAIActions, AAIAction
-from animalai.envs.raycastparser import RayCastParser
-from animalai.envs.raycastparser import RayCastObjects
+from animalai.actions import AAIActions, AAIAction
+from animalai.raycastparser import RayCastParser
+from animalai.raycastparser import RayCastObjects
 
 class Braitenberg():
     """Implements a simple Braitenberg vehicle agent that heads towards food

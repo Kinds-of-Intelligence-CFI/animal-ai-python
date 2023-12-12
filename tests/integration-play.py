@@ -2,8 +2,8 @@ import random
 import sys
 from pathlib import Path
 
-from animalai.envs.environment import AnimalAIEnvironment
-from animalai.envs.executable import find_executable
+from animalai.environment import AnimalAIEnvironment
+from animalai.executable import find_executable
 
 
 def main():
