@@ -1,3 +1,6 @@
+tests/executable/
+!tests/executable/.gitkeep
+
 # Rye (we don't commit locks)
 .python-version
 requirements.lock
