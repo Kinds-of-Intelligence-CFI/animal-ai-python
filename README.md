@@ -19,6 +19,7 @@ If you are new to contributing to open source, [this](https://opensource.guide/h
 ## Version History
 - v3.0.6
   - Fixed dependency requirement for running an OpenAI Gym session.
+  - Added optional package (Shimmy) which the user may need if using Stable-baselines3 (via command: 'pip install animalai[shimmy]'.
 - v3.0.5
   - Removed redundant packages in setup.py.
   - Added download stats.
