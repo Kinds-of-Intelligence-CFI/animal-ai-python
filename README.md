@@ -4,16 +4,14 @@
 [![PyPI](https://img.shields.io/pypi/v/animalai)](https://pypi.org/project/animalai/)
 [![PyPI Downloads](https://img.shields.io/pypi/dm/animalai)](https://pypi.org/project/animalai/)
 
-This repository is responsible for managing and updating primarily the PyPI package (<https://pypi.org/project/animalai/>) for Animal-AI package dependencies.
+This repository manages the Python interface for the AnimalAI environment.
 
-The main project repository is located [here](https://github.com/Kinds-of-Intelligence-CFI/animal-ai)
-
-The Animal-AI Unity project repository is located [here](https://github.com/Kinds-of-Intelligence-CFI/animal-ai-unity-project)
+The main project repository is located [here](https://github.com/Kinds-of-Intelligence-CFI/animal-ai).
 
 - **Website:** [https://www.animalai.org](https://animalai.org/)
 - **Documentation:** [https://animalai.org/doc](https://github.com/Kinds-of-Intelligence-CFI/animal-ai/tree/main/docs)
 - **Unity Source code:** [https://github.com/Kinds-of-Intelligence-CFI/animal-ai-unity-project](https://github.com/Kinds-of-Intelligence-CFI/animal-ai-unity-project)
-- **Python Source code:** [https://github.com/Kinds-of-Intelligence-CFI/animal-ai-package/tree/main/animalai](https://github.com/Kinds-of-Intelligence-CFI/animal-ai-package/tree/main/animalai)
+- **Python Source code:** [https://github.com/Kinds-of-Intelligence-CFI/animal-ai-python](https://github.com/Kinds-of-Intelligence-CFI/animal-ai-python)
 - **Bug reports:** [https://github.com/Kinds-of-Intelligence-CFI/animal-ai/issues](https://github.com/Kinds-of-Intelligence-CFI/animal-ai/issues)
 
 For more information about the ways you can contribute to Animal-AI, visit our website. If you’re unsure where to start or how your skills fit in, reach out! You can ask on GitHub, by opening a new issue or leaving a comment on a relevant issue that is already open.

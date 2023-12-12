@@ -31,8 +31,8 @@ requires-python = ">=3.6, <3.10"
 dependencies = ["mlagents==0.30.0", "numpy==1.21.2", "protobuf==3.20.3"]
 
 [project.urls]
-"Website"         = "https://sites.google.com/csah.cam.ac.uk/animalai"
-"Repository"      = "https://github.com/Kinds-of-Intelligence-CFI/animal-package"
+"Website"         = "https://animalai.org/"
+"Repository"      = "https://github.com/Kinds-of-Intelligence-CFI/animal-ai-python"
 "Main Repository" = "https://github.com/Kinds-of-Intelligence-CFI/animal-ai"
 "Releases"        = "https://https://github.com/Kinds-of-Intelligence-CFI/animal-ai/releases"
 "Documentation"   = "https://github.com/Kinds-of-Intelligence-CFI/animal-ai/tree/main/docs"
