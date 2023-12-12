@@ -1,6 +1,7 @@
 # Animal-AI
 
 ![steampunkFOURcrop](https://github.com/Kinds-of-Intelligence-CFI/animal-ai/assets/65875290/df798f4a-cb2c-416f-a150-093b9382a621)
+[![Python Versions](https://img.shields.io/pypi/pyversions/animalai)](https://pypi.org/project/animalai/)
 [![PyPI](https://img.shields.io/pypi/v/animalai)](https://pypi.org/project/animalai/)
 [![PyPI Downloads](https://img.shields.io/pypi/dm/animalai)](https://pypi.org/project/animalai/)
 
