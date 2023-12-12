@@ -1,8 +1,9 @@
 # Animal-AI
+
 ![steampunkFOURcrop](https://github.com/Kinds-of-Intelligence-CFI/animal-ai/assets/65875290/df798f4a-cb2c-416f-a150-093b9382a621)
 Animal-AI Python Project
 
-This repository is responsible for managing and updating primarily the PyPI package (https://pypi.org/project/animalai/) for Animal-AI package dependencies. 
+This repository is responsible for managing and updating primarily the PyPI package (https://pypi.org/project/animalai/) for Animal-AI package dependencies.
 
 The main project repository is located [here](https://github.com/Kinds-of-Intelligence-CFI/animal-ai)
 
@@ -13,14 +14,44 @@ The Animal-AI Unity project repository is located [here](https://github.com/Kind
 - **Website:** [https://www.animalai.org](https://animalai.org/)
 - **Documentation:** [https://animalai.org/doc](https://github.com/Kinds-of-Intelligence-CFI/animal-ai/tree/main/docs)
 - **Unity Source code:** [https://github.com/Kinds-of-Intelligence-CFI/animal-ai-unity-project](https://github.com/Kinds-of-Intelligence-CFI/animal-ai-unity-project)
--  **Python Source code:** [https://github.com/Kinds-of-Intelligence-CFI/animal-ai-package/tree/main/animalai](https://github.com/Kinds-of-Intelligence-CFI/animal-ai-package/tree/main/animalai)
+- **Python Source code:** [https://github.com/Kinds-of-Intelligence-CFI/animal-ai-package/tree/main/animalai](https://github.com/Kinds-of-Intelligence-CFI/animal-ai-package/tree/main/animalai)
 - **Bug reports:** [https://github.com/Kinds-of-Intelligence-CFI/animal-ai/issues](https://github.com/Kinds-of-Intelligence-CFI/animal-ai/issues)
 
 For more information about the ways you can contribute to Animal-AI, visit our website. If you’re unsure where to start or how your skills fit in, reach out! You can ask on GitHub, by opening a new issue or leaving a comment on a relevant issue that is already open.
 
 If you are new to contributing to open source, [this](https://opensource.guide/how-to-contribute/) guide helps explain why, what, and how to successfully get involved.
 
+## AnimalAI with Stable Baselines3
+
+[Stable Baselines3](https://stable-baselines3.readthedocs.io/en/master/) works against the [Gymnasium](https://gymnasium.farama.org/) interface ([source](https://stable-baselines3.readthedocs.io/en/master/guide/custom_env.html#using-custom-environments)), while the AnimalAI implements an older (<0.26) [Gym](https://github.com/openai/gym/releases/tag/v0.21.0) interface ([compatibility notes](https://gymnasium.farama.org/content/migration-guide/)).
+
+You can make it all work together with something like [Shimmy](https://shimmy.farama.org/), but Gymnasium has a built in [compatibility wrapper](https://gymnasium.farama.org/api/wrappers/misc_wrappers/#gymnasium.wrappers.EnvCompatibility), so you can just use that.
+
+Install your dependencies `pip install animalai gymnasium stable-baselines3`, and use following code:
+
+```python
+# Import the necessary environment wrappers.
+# ml_agents is installed by animalai
+from mlagents_envs.envs.unity_gym_env import UnityToGymWrapper
+from gym.wrappers.compatibility import EnvCompatibility
+from animalai.envs.environment import AnimalAIEnvironment
+
+env = AnimalAIEnvironment(...)
+
+# This makes it a Stable Baselines3 compatible environment
+# Note that you might have to change some of the options depending on whether you use visual observations, whether there is support for hierarchical actions, etc.
+env = UnityToGymWrapper(env)
+env = EnvCompatibility(env)
+
+# ... your Stable Baselines3 code here ...
+```
+
+## AnimalAI with DreamerV3
+
+There is a template repository for using AnimalAI with DreamerV3 [here](https://github.com/Kinds-of-Intelligence-CFI/dreamerv3-animalai).
+
 ## Version History
+
 - v3.0.5
   - Removed redundant packages in setup.py.
   - Added download stats.
@@ -33,4 +64,4 @@ If you are new to contributing to open source, [this](https://opensource.guide/h
 - v3.0.2
   - Fixed major pacakge dependency issues, related to mlagents 0.30.0, protopuf, and shimy.
   - Updated project setup.py to accomodate the latest version of Animal-AI package dependencies.
-    - Users can now use # pip install animalai # to install latest version of Animal-AI from PyPI effortlessly. 
+    - Users can now use # pip install animalai # to install latest version of Animal-AI from PyPI effortlessly.
