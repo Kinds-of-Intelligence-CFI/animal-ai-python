@@ -1,7 +1,7 @@
 [project]
 name = "animalai"
-version = "3.0.5"
-description = "Animal AI 3 Python API"
+version = "4.0.0"
+description = "Animal AI Python API"
 license = "MIT"
 readme = "README.md"
 authors = [
