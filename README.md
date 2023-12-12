@@ -1,15 +1,14 @@
 # Animal-AI
 
 ![steampunkFOURcrop](https://github.com/Kinds-of-Intelligence-CFI/animal-ai/assets/65875290/df798f4a-cb2c-416f-a150-093b9382a621)
-Animal-AI Python Project
+[![PyPI](https://img.shields.io/pypi/v/animalai)](https://pypi.org/project/animalai/)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/animalai)](https://pypi.org/project/animalai/)
 
 This repository is responsible for managing and updating primarily the PyPI package (<https://pypi.org/project/animalai/>) for Animal-AI package dependencies.
 
 The main project repository is located [here](https://github.com/Kinds-of-Intelligence-CFI/animal-ai)
 
 The Animal-AI Unity project repository is located [here](https://github.com/Kinds-of-Intelligence-CFI/animal-ai-unity-project)
-
-![PyPI Downloads](https://img.shields.io/pypi/dm/animalai) ![PyPI Downloads](https://img.shields.io/pypi/dw/animalai) ![PyPI Downloads](https://img.shields.io/pypi/dd/animalai)
 
 - **Website:** [https://www.animalai.org](https://animalai.org/)
 - **Documentation:** [https://animalai.org/doc](https://github.com/Kinds-of-Intelligence-CFI/animal-ai/tree/main/docs)
