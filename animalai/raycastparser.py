@@ -100,7 +100,7 @@ class RayCastParser():
             newRow[i] = row[2*(i+1)]
         return newRow
 
-    def prettyPrint(self, raycast) -> str:
+    def prettyPrint(self, raycast) -> None:
         """
         Pretty-prints the parsed raycast data, making it easier to read and understand.
 

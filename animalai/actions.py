@@ -13,7 +13,7 @@ class AAIActions():
         self.BACKWARDS = AAIAction("backwards", ActionTuple(continuous=np.zeros((no_agents,0)), discrete=np.array([[2,0]], dtype=np.int32)))
         self.BACKWARDSLEFT = AAIAction("backwards&left", ActionTuple(continuous=np.zeros((no_agents,0)), discrete=np.array([[2,2]], dtype=np.int32)))
         self.BACKWARDSRIGHT = AAIAction("backwards&right", ActionTuple(continuous=np.zeros((no_agents,0)), discrete=np.array([[2,1]], dtype=np.int32)))
-        self.allActions = [self.NOOP, self.LEFT, self.RIGHT, self.FORWARDS, self.FORWARDSLEFT, self.FORWARDSRIGHT, self.BACKWARDS, self.BACKWARDSLEFT, self.BACKWARDSRIGHT]
+        self.allActions: list = [self.NOOP, self.LEFT, self.RIGHT, self.FORWARDS, self.FORWARDSLEFT, self.FORWARDSRIGHT, self.BACKWARDS, self.BACKWARDSLEFT, self.BACKWARDSRIGHT]
 
     def random(self):
         return np.random.choice(self.allActions)

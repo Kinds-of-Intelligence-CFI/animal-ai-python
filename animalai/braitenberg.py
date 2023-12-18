@@ -13,7 +13,7 @@ class Braitenberg():
         self.actions = AAIActions()
         self.prev_action = self.actions.NOOP
 
-    def prettyPrint(self, obs) -> str:
+    def prettyPrint(self, obs) -> None:
         """Prints the parsed observation"""
         return self.raycast_parser.prettyPrint(obs)
     

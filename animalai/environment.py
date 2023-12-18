@@ -27,7 +27,7 @@ class AnimalAIEnvironment(UnityEnvironment):
 
     def __init__(
         self,
-        additional_args: List[str] = None,
+        additional_args: Optional[List[str]] = None,
         log_folder: str = "",
         file_name: Optional[str] = None,
         worker_id: int = 0,
@@ -37,7 +37,7 @@ class AnimalAIEnvironment(UnityEnvironment):
         arenas_configurations: str = "",
         inference: bool = False,
         useCamera: bool = True,
-        resolution: int = None,
+        resolution: int = 150,
         grayscale: bool = False,
         useRayCasts: bool = False,
         raysPerSide: int = 2,
@@ -221,7 +221,10 @@ class AnimalAIEnvironment(UnityEnvironment):
             f = open(arenas_configurations, "r")
             d = f.read()
             f.close()
-            self.arenas_parameters_side_channel.send_raw_data(bytearray(d, encoding="utf-8"))
+            side_channel = self.arenas_parameters_side_channel
+            if side_channel is None:
+                raise RuntimeError("Arenas parameters side channel not found. ")
+            side_channel.send_raw_data(bytearray(d, encoding="utf-8"))
         try:
             super().reset()
         except UnityTimeOutException as timeoutException:
