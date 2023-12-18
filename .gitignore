@@ -1,5 +1,5 @@
-tests/executable/
-!tests/executable/.gitkeep
+test/executable/
+!test/executable/.gitkeep
 
 # Rye (we don't commit locks)
 .python-version

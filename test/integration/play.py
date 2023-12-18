@@ -11,8 +11,8 @@ def main():
     Manual test to see if play mode works.
     """
     env = AnimalAIEnvironment(
-        file_name=str(find_executable(Path("tests/executable/"))),
-        arenas_configurations=arenas.GoodGoal_Random,
+        file_name=str(find_executable(Path("test/executable/"))),
+        arenas_configurations=arenas.GOOD_GOAL_RANDOM_POS,
         base_port=5005 + random.randint(0, 1000),
         play=True,
     )
