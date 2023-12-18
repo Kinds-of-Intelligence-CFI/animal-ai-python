@@ -1,7 +1,7 @@
 import random
 from pathlib import Path
 
-from animalai.environment import AnimalAIEnvironment
+from animalai import AnimalAIEnvironment
 from animalai.executable import find_executable
 from animalai.agents import Braitenberg
 

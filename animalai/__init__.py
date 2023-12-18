@@ -1,0 +1,1 @@
+from animalai.environment import AnimalAIEnvironment as AnimalAIEnvironment
