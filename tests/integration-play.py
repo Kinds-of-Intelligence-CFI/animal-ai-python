@@ -2,7 +2,7 @@ import random
 import sys
 from pathlib import Path
 
-from animalai import AnimalAIEnvironment
+from animalai import AnimalAIEnvironment, arenas
 from animalai.executable import find_executable
 
 
@@ -12,7 +12,7 @@ def main():
     """
     env = AnimalAIEnvironment(
         file_name=str(find_executable(Path("tests/executable/"))),
-        arenas_configurations="tests/configs/sanityGreen.yml",
+        arenas_configurations=arenas.GoodGoal_Random,
         base_port=5005 + random.randint(0, 1000),
         play=True,
     )
