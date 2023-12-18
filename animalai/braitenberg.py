@@ -42,6 +42,8 @@ class Braitenberg():
         else:
             if self.prev_action == self.actions.NOOP or self.prev_action == self.actions.BACKWARDS:
                 newAction = self.actions.LEFT
+            elif newAction == self.actions.NOOP:
+                pass
             else:
                 newAction = self.prev_action    
         self.prev_action = newAction
