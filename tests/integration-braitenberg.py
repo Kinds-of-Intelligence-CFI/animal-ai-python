@@ -3,7 +3,7 @@ from pathlib import Path
 
 from animalai.environment import AnimalAIEnvironment
 from animalai.executable import find_executable
-from animalai.braitenberg import Braitenberg
+from animalai.agents import Braitenberg
 
 
 def main():
