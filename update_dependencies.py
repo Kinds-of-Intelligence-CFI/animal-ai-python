@@ -17,4 +17,4 @@ def update_packages():
 if __name__ == "__main__":
     print("Updating specified packages to allowed versions...")
     update_packages()
-    print("Udate complete.")
+    print("Update complete.")
