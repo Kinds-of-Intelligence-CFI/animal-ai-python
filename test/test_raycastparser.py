@@ -3,7 +3,6 @@ import contextlib
 import io
 
 from numpy.testing import assert_array_equal
-
 from animalai.raycastparser import RayCastParser, RayCastObjects
 
 
