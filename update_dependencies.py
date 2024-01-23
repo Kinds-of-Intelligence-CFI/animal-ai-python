@@ -18,6 +18,7 @@ def run_command(command):
 
 
 def update_packages():
+    """Update the specified packages to the allowed versions."""
     for package, version in allowed_versions.items():
         print(f"Updating {package} to version {version}...")
         output, error, status = run_command(f"pip install {package}=={version}")
