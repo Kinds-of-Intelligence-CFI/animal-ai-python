@@ -8,7 +8,7 @@ from animalai.agents import Braitenberg
 
 def main():
     """
-    Manual test to see if play mode works.
+    Manual test to see if brainenberg agent works.
     """
     n_rays = 9
 
