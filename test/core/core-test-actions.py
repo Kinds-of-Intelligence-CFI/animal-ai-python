@@ -3,6 +3,7 @@ from animalai.actions import AAIActions
 
 """ This file contains tests for the AAIActions class. Please keep it this way. """
 
+
 class TestAAIActions(unittest.TestCase):
     def test_action_initialization(self):
         """Test if AAIActions initializes correctly"""

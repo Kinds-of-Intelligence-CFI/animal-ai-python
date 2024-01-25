@@ -7,6 +7,7 @@ from animalai.raycastparser import RayCastParser, RayCastObjects
 
 """ This file contains tests for the raycastparser class. Please keep it this way. """
 
+
 class TestRayCastParser(unittest.TestCase):
     def test_GOODGOAL_IMMOVABLE(self):
         """
