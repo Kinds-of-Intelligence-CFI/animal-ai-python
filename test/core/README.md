@@ -2,7 +2,7 @@
 
 This folder contains the core tests for the project. **These tests are run on every pull request to the repository** and are used to ensure that the core functionality of the project is working as expected.
 
-## Running the tests
+## Running Tests
 
 To run the tests, simply run the following command:
 
@@ -19,7 +19,7 @@ python -m unittest discover -s test/core
 
 This command will find and run every test in the core test folder, useful for running all tests at once (batch).
 
-## Writing tests
+## Writing Custom Tests
 
 To write a test, simply create a new file in the core test folder, and name it something like `core-test-<name>.py`. Then, add the following code to the file:
 
