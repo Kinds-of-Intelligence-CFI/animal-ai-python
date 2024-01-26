@@ -1,6 +1,11 @@
 import unittest
 from unittest.mock import patch
 from animalai.environment import AnimalAIEnvironment
+from mlagents_envs.side_channel.raw_bytes_channel import RawBytesChannel
+from mlagents_envs.side_channel.engine_configuration_channel import (
+    EngineConfigurationChannel,
+)
+
 
 """ This file contains tests for the environment class. Please keep it this way. """
 
@@ -28,8 +33,21 @@ class TestSideChannelsConfiguration(unittest.TestCase):
         """Test if side channels are correctly configured."""
         try:
             env = AnimalAIEnvironment()
-#need to add ungeneric assertion here
-            self.assertTrue(isinstance(env.side_channels, list)) 
+
+            # Check for specific types of side channels
+            has_engine_config_channel = any(
+                isinstance(channel, EngineConfigurationChannel)
+                for channel in env.side_channels
+            )
+            self.assertTrue(
+                has_engine_config_channel, "EngineConfigurationChannel not found"
+            )
+
+            has_raw_bytes_channel = any(
+                isinstance(channel, RawBytesChannel) for channel in env.side_channels
+            )
+            self.assertTrue(has_raw_bytes_channel, "RawBytesChannel not found")
+
         except Exception as e:
             self.fail(f"Side channels configuration test failed: {e}")
 
