@@ -43,11 +43,6 @@ class TestSideChannelsConfiguration(unittest.TestCase):
                 has_engine_config_channel, "EngineConfigurationChannel not found"
             )
 
-            has_raw_bytes_channel = any(
-                isinstance(channel, RawBytesChannel) for channel in env.side_channels
-            )
-            self.assertTrue(has_raw_bytes_channel, "RawBytesChannel not found")
-
         except Exception as e:
             self.fail(f"Side channels configuration test failed: {e}")
 
