@@ -1,5 +1,12 @@
 import subprocess
 
+'''
+This script is used to update the dependencies of Animal-AI PyPi package to the allowed versions.
+The allowed versions are defined in the dictionary below. The script will update the specified
+packages to the allowed versions. If the update fails, the script will continue to update the
+remaining packages. The script will print the error message if the update fails for a package.
+'''
+
 # Defining the allowed versions of packages that are used by Animal-AI PyPi package.
 allowed_versions = {
     "mlagents_envs": "0.30.*",
