@@ -11,15 +11,15 @@ To run the tests, simply run the following command in the root folder:
 ```bash
 python -m unittest test/core/core-test-actions.py
 ```
-The above will run a specific test file, where you cycle through the core test folder, making sure to test each file in any order you like. 
+The above will run a specific test file, where you cycle manually via specifiying the test file name. You would then repeat the above command for each test file you wish to run in any order you like.
 
-If you wish to run all tests, run the following command in the root folder:
+Additionally, if you wish to run all tests in one batch, run the following command in the root folder:
 
 ```bash
 python -m unittest discover -s test/core
 ```
 
-This command will find and run every test in the core test folder, useful for running all tests at once (batch).
+This command will find and run every test in the core test folder, useful for running all tests at once (batch). Note that the order of the tests is not guaranteed, and may change between runs.
 
 ## Writing Custom Tests
 
