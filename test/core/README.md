@@ -23,7 +23,7 @@ This command will find and run every test in the core test folder, useful for ru
 
 ## Writing Custom Tests
 
-To write a test, simply create a new file in the core test folder, and name it something like `core-test-<name>.py`. Then, add the following code to the file:
+To write a test, simply create a new file in the core test folder, and name it something like `your-custom-test.py`. Then, add the following code to the file:
 
 ```python
 import unittest
