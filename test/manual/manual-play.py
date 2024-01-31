@@ -14,12 +14,12 @@ class TestManualPlay(unittest.TestCase):
         env = AnimalAIEnvironment(
             file_name='test/executable', 
             base_port=5005 + random.randint(0, 1000),
-            play=True, # hERE, we check if play mode is launched correctly
+            play=True, # Here, we check if play mode is launched correctly
         )
         
         try:
             env.reset()  # Checking the main loop of the env code
-            env.close()  # Cloes the environment
+            env.close()
         except Exception as e:
             self.fail(f"Environment initialization failed with an exception: {e}")
 
