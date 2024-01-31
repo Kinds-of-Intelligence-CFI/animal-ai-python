@@ -26,10 +26,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install setuptools wheel twine pytest
 
-      - name: Update dependencies
-        run: |
-          python update_dependencies.py
-
       - name: Run tests in the 'core' subfolder within the 'test' folder
         run: |
           pytest test/core  # running only core tests for now
