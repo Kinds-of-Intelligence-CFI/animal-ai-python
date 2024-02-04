@@ -6,7 +6,6 @@ from mlagents_envs.side_channel.engine_configuration_channel import (
     EngineConfigurationChannel,
 )
 
-
 """ This file contains tests for the environment class. Please keep it this way. """
 
 
