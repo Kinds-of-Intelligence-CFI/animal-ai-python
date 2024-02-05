@@ -28,7 +28,7 @@ jobs:
 
       - name: Run tests in the 'core' subfolder within the 'test' folder
         run: |
-          pytest test/core  # running only core tests for now
+          pytest test # running only core tests for now
 
       - name: Build binary wheel and a source tarball
         run: |
