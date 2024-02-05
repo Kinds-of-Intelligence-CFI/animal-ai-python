@@ -28,7 +28,7 @@ jobs:
 
       - name: Run tests with pytest
         run: |
-          pytest test/ # running only core tests for now
+          pytest test/
 
       - name: Build binary wheel and a source tarball
         run: |
