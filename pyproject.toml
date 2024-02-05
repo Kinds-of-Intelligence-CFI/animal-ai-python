@@ -1,0 +1,53 @@
+[project]
+name = "animalai"
+version = "4.0.0"
+description = "Animal AI Python API"
+license = "MIT"
+readme = "README.md"
+authors = [
+    { name = "Animal-AI Team", email = "kindsofintelligence.cfi@gmail.com" },
+    { name = "Matt Crosby" },
+    { name = "Ibrahim Alhas" },
+    { name = "Konstantinos Voudouris" },
+    { name = "Wout Schellaert" },
+    { name = "Joel Holmes" },
+    { name = "Ben Beyret" },
+]
+classifiers = [
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Operating System :: Microsoft :: Windows :: Windows 10",
+    "Operating System :: Microsoft :: Windows :: Windows 11",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: POSIX :: Linux",
+]
+requires-python = ">=3.8, <3.10"
+dependencies = [
+    "mlagents_envs==0.30.0",
+    "numpy",
+    "protobuf==3.20.3",
+]
+
+[project.urls]
+"Website"         = "https://animalai.org/"
+"Repository"      = "https://github.com/Kinds-of-Intelligence-CFI/animal-ai-python"
+"Main Repository" = "https://github.com/Kinds-of-Intelligence-CFI/animal-ai"
+"Releases"        = "https://https://github.com/Kinds-of-Intelligence-CFI/animal-ai/releases"
+"Documentation"   = "https://github.com/Kinds-of-Intelligence-CFI/animal-ai/tree/main/docs"
+
+[build-system]
+requires      = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed          = true
+dev-dependencies = []
+
+[tool.hatch.metadata]
+allow-direct-references = true

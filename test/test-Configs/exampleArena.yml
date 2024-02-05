@@ -1,0 +1,49 @@
+# Multiple arena with single Agent, Reward sanity check.
+
+!ArenaConfig
+arenas:
+  0: !Arena
+    pass_mark: 1
+    t: 100
+    items:
+      - !Item
+        name: Agent
+        positions:
+          - !Vector3 { x: -1, y: -1, z: -1 }
+        rotations: [-1]
+      - !Item
+        name: GoodGoal
+        positions:
+          - !Vector3 { x: -1, y: -1, z: -1 }
+        sizes:
+          - !Vector3 { x: 2, y: 2, z: 2 }
+  1: !Arena
+    pass_mark: 1
+    t: 100
+    items:
+      - !Item
+        name: Agent
+        positions:
+          - !Vector3 { x: -1, y: -1, z: -1 }
+        rotations: [-1]
+      - !Item
+        name: BadGoal
+        positions:
+          - !Vector3 { x: -1, y: -1, z: -1 }
+        sizes:
+          - !Vector3 { x: 2, y: 2, z: 2 }
+  -1: !Arena # checking if -1 value is properly handled (should become 3rd arena)
+    pass_mark: 1
+    t: 100
+    items:
+      - !Item
+        name: Agent
+        positions:
+          - !Vector3 { x: -1, y: -1, z: -1 }
+        rotations: [-1]
+      - !Item
+        name: GoodGoalMulti
+        positions:
+          - !Vector3 { x: -1, y: -1, z: -1 }
+        sizes:
+          - !Vector3 { x: 2, y: 2, z: 2 }

@@ -1,6 +1,6 @@
-from animalai.envs.actions import AAIActions, AAIAction
-from animalai.envs.raycastparser import RayCastParser
-from animalai.envs.raycastparser import RayCastObjects
+from animalai.actions import AAIActions, AAIAction
+from animalai.raycastparser import RayCastParser
+from animalai.raycastparser import RayCastObjects
 
 class Braitenberg():
     """Implements a simple Braitenberg vehicle agent that heads towards food
@@ -13,7 +13,7 @@ class Braitenberg():
         self.actions = AAIActions()
         self.prev_action = self.actions.NOOP
 
-    def prettyPrint(self, obs) -> str:
+    def prettyPrint(self, obs) -> None:
         """Prints the parsed observation"""
         return self.raycast_parser.prettyPrint(obs)
     
@@ -42,6 +42,8 @@ class Braitenberg():
         else:
             if self.prev_action == self.actions.NOOP or self.prev_action == self.actions.BACKWARDS:
                 newAction = self.actions.LEFT
+            elif newAction == self.actions.NOOP:
+                pass
             else:
                 newAction = self.prev_action    
         self.prev_action = newAction
