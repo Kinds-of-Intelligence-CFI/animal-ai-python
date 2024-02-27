@@ -1,6 +1,6 @@
 [project]
 name = "animalai"
-version = "4.0.0"
+version = "4.0.1"
 description = "Animal AI Python API"
 license = "MIT"
 readme = "README.md"
