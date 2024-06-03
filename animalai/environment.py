@@ -1,9 +1,10 @@
 import uuid
+import os
 from typing import NamedTuple, Dict, Optional, List
 from mlagents_envs.environment import UnityEnvironment
 from mlagents_envs.rpc_communicator import UnityTimeOutException
+from mlagents_envs.side_channel.side_channel import SideChannel, OutgoingMessage
 from mlagents_envs.side_channel.raw_bytes_channel import RawBytesChannel
-from mlagents_envs.side_channel.side_channel import SideChannel
 from mlagents_envs.side_channel.engine_configuration_channel import (
     EngineConfig,
     EngineConfigurationChannel,
@@ -13,6 +14,19 @@ from mlagents_envs.side_channel.engine_configuration_channel import (
 class PlayTrain(NamedTuple):
     play: int
     train: int
+
+
+class YamlFileNameSideChannel(SideChannel):
+    def __init__(self, channel_id: uuid.UUID):
+        super().__init__(channel_id)
+
+    def send_yaml_file_name_and_data(self, file_path):
+        msg = OutgoingMessage()
+        file_name = os.path.basename(file_path)
+        yaml_data = open(file_path, 'rb').read()
+        msg.write_string(file_name)
+        msg.write_bytes(yaml_data)
+        self.queue_message_to_send(msg)
 
 
 class AnimalAIEnvironment(UnityEnvironment):
@@ -139,6 +153,8 @@ class AnimalAIEnvironment(UnityEnvironment):
         self.timeout = 10 if play else 60
         self.side_channels = side_channels if side_channels else []
         self.arenas_parameters_side_channel = None
+        self.yaml_file_side_channel = YamlFileNameSideChannel(
+            uuid.UUID(self.YAML_SC_UUID))
         self.use_YAML = use_YAML
         self.timescale = timescale
         self.captureFrameRate = captureFrameRate
@@ -154,14 +170,15 @@ class AnimalAIEnvironment(UnityEnvironment):
             no_graphics=no_graphics,
             timeout_wait=self.timeout,
             additional_args=args,
-            side_channels=self.side_channels,
+            side_channels=self.side_channels + [self.yaml_file_side_channel],
             log_folder=log_folder,
         )
         self.reset(arenas_configurations)
 
     def configure_side_channels(self, side_channels: List[SideChannel]) -> None:
         contains_engine_config_sc = any(
-            [isinstance(sc, EngineConfigurationChannel) for sc in side_channels]
+            [isinstance(sc, EngineConfigurationChannel)
+             for sc in side_channels]
         )
         if not contains_engine_config_sc:
             self.side_channels.append(self.create_engine_config_side_channel())
@@ -227,8 +244,11 @@ class AnimalAIEnvironment(UnityEnvironment):
             f.close()
             side_channel = self.arenas_parameters_side_channel
             if side_channel is None:
-                raise RuntimeError("Arenas parameters side channel not found. ")
+                raise RuntimeError(
+                    "Arenas parameters side channel not found. ")
             side_channel.send_raw_data(bytearray(d, encoding="utf-8"))
+            self.yaml_file_side_channel.send_yaml_file_name_and_data(
+                arenas_configurations)
         try:
             super().reset()
         except UnityTimeOutException as timeoutException:
