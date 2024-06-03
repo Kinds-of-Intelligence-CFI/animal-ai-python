@@ -23,8 +23,10 @@ class YamlFileNameSideChannel(SideChannel):
     def send_yaml_file_name_and_data(self, file_path):
         msg = OutgoingMessage()
         file_name = os.path.basename(file_path)
-        # Send only the file name, no YAML data
+        # Read the YAML file as binary
+        yaml_data = open(file_path, "rb").read()
         msg.write_string(file_name)
+        msg.write_bytes(yaml_data)
         self.queue_message_to_send(msg)
 
 
