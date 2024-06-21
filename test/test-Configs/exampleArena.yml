@@ -1,5 +1,4 @@
 # Multiple arena with single Agent, Reward sanity check.
-
 !ArenaConfig
 arenas:
   0: !Arena

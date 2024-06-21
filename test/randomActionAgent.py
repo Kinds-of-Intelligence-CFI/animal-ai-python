@@ -7,6 +7,7 @@ from animalai.actions import AAIActions
 from animalai.executable import find_executable
 from animalai.agents import RandomActionAgent
 
+
 def main():
     """
     Manual test to see if random action agent works.
@@ -23,12 +24,13 @@ def main():
         inference=True,
     )
 
-    randomAgent = RandomActionAgent(step_length_distribution=lambda: np.random.normal(5, 1)) # a Rayleigh walker (sampling from normal distribution)
+    randomAgent = RandomActionAgent(step_length_distribution=lambda: np.random.normal(
+        5, 1))  # a Rayleigh walker (sampling from normal distribution)
 
     # by default should be AnimalAI?team=0
     behavior = list(env.behavior_specs.keys())[0]
 
-    #define actions
+    # define actions
     actions = AAIActions()
 
     # Run two episodes
@@ -42,13 +44,13 @@ def main():
 
         while not done:
             step_list = randomAgent.get_num_steps(prev_step=new_action)
-            
+
             for action in step_list:
                 print(action)
                 env.set_actions(behavior, action.action_tuple)
                 env.step()
                 previous_action = action
-                
+
                 dec, term = env.get_steps(behavior)
 
                 if len(term) > 0:
@@ -56,7 +58,7 @@ def main():
                     print(f"Episode Reward: {episodeReward}")
                     done = True
                     break
-            
+
             new_action = randomAgent.get_new_action(prev_step=previous_action)
 
     print("Closing environment")
