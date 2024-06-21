@@ -24,15 +24,15 @@ class Braitenberg():
         if self.ahead(obs, RayCastObjects.GOODGOALMULTI):
             newAction = self.actions.FORWARDS
         elif self.left(obs, RayCastObjects.GOODGOALMULTI):
-            newAction = self.actions.FORWARDSLEFT
+            newAction = self.actions.LEFT
         elif self.right(obs, RayCastObjects.GOODGOALMULTI):
-            newAction = self.actions.FORWARDSRIGHT
+            newAction = self.actions.RIGHT
         elif self.ahead(obs, RayCastObjects.GOODGOAL):
             newAction = self.actions.FORWARDS
         elif self.left(obs, RayCastObjects.GOODGOAL):
-            newAction = self.actions.FORWARDSLEFT
+            newAction = self.actions.LEFT
         elif self.right(obs, RayCastObjects.GOODGOAL):
-            newAction = self.actions.FORWARDSRIGHT
+            newAction = self.actions.RIGHT
         elif self.ahead(obs, RayCastObjects.BADGOAL):
             newAction = self.actions.BACKWARDS
         elif self.left(obs, RayCastObjects.BADGOAL):
