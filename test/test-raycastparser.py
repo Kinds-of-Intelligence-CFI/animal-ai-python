@@ -14,7 +14,8 @@ class TestRayCastParser(unittest.TestCase):
         Check if the parser correctly identifies GOODGOAL and IMMOVABLE objects
         and places them correctly in the parsed raycast array.
         """
-        parser = RayCastParser([RayCastObjects.GOODGOAL, RayCastObjects.IMMOVABLE], 5)
+        parser = RayCastParser(
+            [RayCastObjects.GOODGOAL, RayCastObjects.IMMOVABLE], 5)
         # fmt: off
         test_raycast = [1, 1, 1, 1, 1, 1, 0, 0.1,
                         1, 1, 1, 1, 1, 1, 0, 0.2,
@@ -27,7 +28,7 @@ class TestRayCastParser(unittest.TestCase):
             [0.3, 0.5, 0.1, 0.4, 0.2]
         ])
 
-        # Test pprint
+        # Test prettyprint
         pp_out = io.StringIO()
         with contextlib.redirect_stdout(pp_out):
             parser.prettyPrint(test_raycast)
@@ -42,7 +43,8 @@ class TestRayCastParser(unittest.TestCase):
         """
         Checks if the parser correctly identifies when no objects are detected.
         """
-        parser = RayCastParser([RayCastObjects.GOODGOAL, RayCastObjects.BADGOAL], 3)
+        parser = RayCastParser(
+            [RayCastObjects.GOODGOAL, RayCastObjects.BADGOAL], 3)
         # fmt: off
         test_raycast = [0, 0, 0, 0, 0, 0, 0, 0.1,
                         0, 0, 0, 0, 0, 0, 0, 0.2,
@@ -52,7 +54,7 @@ class TestRayCastParser(unittest.TestCase):
             [0.0, 0.0, 0.0],
             [0.0, 0.0, 0.0]
         ])
-        # Test pprint
+        # Test prettyprint
         pp_out = io.StringIO()
         with contextlib.redirect_stdout(pp_out):
             parser.prettyPrint(test_raycast)
@@ -88,7 +90,7 @@ class TestRayCastParser(unittest.TestCase):
             [0.3, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
             [0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0 ]
             ])
-        # Test pprint
+        # Test prettyprint
         pp_out = io.StringIO()
         with contextlib.redirect_stdout(pp_out):
             parser.prettyPrint(test_raycast)
@@ -121,7 +123,7 @@ class TestRayCastParser(unittest.TestCase):
             [0.3, 0.5, 0.0, 0.1, 0.6, 0.4, 0.2],
             [0.3, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0]
             ])
-        # Test pprint
+        # Test prettyprint
         pp_out = io.StringIO()
         with contextlib.redirect_stdout(pp_out):
             parser.prettyPrint(test_raycast)
