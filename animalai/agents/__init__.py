@@ -1,1 +1,2 @@
 from animalai.agents.braitenberg import Braitenberg as Braitenberg
+from animalai.agents.randomActionAgent import RandomActionAgent as RandomActionAgent
