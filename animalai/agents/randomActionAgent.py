@@ -1,8 +1,6 @@
 import numpy as np
-
 from collections import deque
 from typing import Deque
-
 from animalai.actions import AAIActions, AAIAction
 
 
@@ -26,8 +24,6 @@ class RandomActionAgent:
         Probability that the next action to be selected is the previous action. Must be between 0 and 1 inclusive. Default is 0.
     remove_prev_step : bool
         Exclude the previous step when selecting next action, to ensure diversity of actions. Default is False. 
-
-    
     """
 
     def __init__(self, max_step_length=10, step_length_distribution=None, action_biases=None, prev_step_bias=0, remove_prev_step=False):
@@ -78,9 +74,11 @@ class RandomActionAgent:
 
             return action[0]
 
-# # Example usage:
-# # Using a normal distribution for step lengths
-# agent = RandomActionAgent(step_length_distribution=lambda: np.random.normal(5, 1))
-
-# # Using a uniform distribution for step lengths
-# agent_uniform = RandomActionAgent(step_length_distribution=lambda: random.randint(0, 10))
+'''
+Example usage:
+Using a normal distribution for step lengths
+agent = RandomActionAgent(step_length_distribution=lambda: np.random.normal(5, 1))
+---
+Using a uniform distribution for step lengths
+agent_uniform = RandomActionAgent(step_length_distribution=lambda: random.randint(0, 10))
+'''
