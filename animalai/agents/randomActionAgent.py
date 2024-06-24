@@ -73,12 +73,3 @@ class RandomActionAgent:
                 action = np.random.choice(a=self.actions, size=1, p=action_biases_softmax)
 
             return action[0]
-
-'''
-Example usage:
-Using a normal distribution for step lengths
-agent = RandomActionAgent(step_length_distribution=lambda: np.random.normal(5, 1))
----
-Using a uniform distribution for step lengths
-agent_uniform = RandomActionAgent(step_length_distribution=lambda: random.randint(0, 10))
-'''
