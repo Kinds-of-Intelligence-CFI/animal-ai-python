@@ -28,7 +28,6 @@ class RayCastObjects(enum.Enum):
     SIGNPOSTER = 11
     DECAYGOAL = 12
     DECAYGOALBOUNCE = 13
-    HOLLOWBOX = 14
 
 
 class RayCastParser:
@@ -71,16 +70,14 @@ class RayCastParser:
         """
         # Validate and preprocess raycast input
         if not isinstance(raycast, (list, np.ndarray, dict)):
-            raise TypeError(
-                "raycast must be a list, numpy array, or dictionary.")
+            raise TypeError("raycast must be a list, numpy array, or dictionary.")
 
         if isinstance(raycast, dict):
             raycast = raycast.get("rays", [])
         if not isinstance(raycast, (list, np.ndarray)) or len(raycast) == 0:
             raise ValueError("Invalid raycast length or num of rays.")
 
-        self.numberDetectableObjects = int(
-            len(raycast) / self.numberOfRays) - 2
+        self.numberDetectableObjects = int(len(raycast) / self.numberOfRays) - 2
         parsedRaycast = np.zeros((len(self.listOfObjects), self.numberOfRays))
         for i in range(self.numberOfRays):
             for j in range(self.numberDetectableObjects):
