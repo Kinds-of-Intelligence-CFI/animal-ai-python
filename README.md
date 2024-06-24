@@ -19,6 +19,12 @@ For more information about the ways you can contribute to Animal-AI, visit our w
 If you are new to contributing to open source, [this](https://github.com/Kinds-of-Intelligence-CFI/animal-ai/blob/main/CONTRIBUTING.md) guide helps explain why, what, and how to successfully get involved.
 
 ## Version History
+* v4.1.0
+  + Updated `RaycastParser` to accept new object:
+    - `HollowBox`.
+    - Added a new low-level random agent implemented on Braitenberg model.
+    - Bug fixes and performance improvements, specifically on improving the reliability of the Braitenberg model.
+    - Added built-in functionality to run yaml configuration files directly via Python.
 * v4.0.1
   + Updated RaycastParser to accept two new objects:
     - `DecoyGoal` and `DecoyGoalBounce`.
