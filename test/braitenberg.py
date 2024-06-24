@@ -20,6 +20,7 @@ def main():
         rayMaxDegrees=30,
         raysPerSide=(n_rays - 1) // 2,
         play=False,
+        inference=True,
     )
 
     # A simple BraitenBerg Agent that heads towards food items.
