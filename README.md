@@ -22,9 +22,9 @@ If you are new to contributing to open source, [this](https://github.com/Kinds-o
 * v4.1.0
   + Updated `RaycastParser` to accept new object:
     - `HollowBox`.
-    - Added a new low-level random agent implemented on Braitenberg model.
-    - Bug fixes and performance improvements, specifically on improving the reliability of the Braitenberg model.
-    - Added built-in functionality to run yaml configuration files directly via Python.
+  + Added a new low-level random agent implemented on Braitenberg model.
+  + Bug fixes and performance improvements, specifically on improving the reliability of the Braitenberg model.
+  + Added built-in functionality to run yaml configuration files directly via Python.
 * v4.0.1
   + Updated RaycastParser to accept two new objects:
     - `DecoyGoal` and `DecoyGoalBounce`.
