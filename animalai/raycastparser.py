@@ -26,8 +26,8 @@ class RayCastObjects(enum.Enum):
     RAMP = 9
     PILLARBUTTON = 10
     SIGNPOSTER = 11
-    DECAYGOAL = 12
-    DECAYGOALBOUNCE = 13
+    DECOYGOAL = 12
+    DECOYGOALBOUNCE = 13
     HOLLOWBOX = 14
 
 
