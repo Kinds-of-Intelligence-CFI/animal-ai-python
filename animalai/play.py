@@ -16,7 +16,7 @@ def play(configuration_file: str = None, env_path: str = None) -> None:
     print("Initializing AAI environment")
     environment = AnimalAIEnvironment(
         file_name=env_path if env_path is not None else str(find_executable(Path(""))),
-        base_port=5005 + random.randint(0, 1000), # use a random port to avoid problems if a previous version exits slowly
+        base_port=5005 + random.randint(0, 1000),
         arenas_configurations=configuration_file if configuration_file is not None else arenas.GOOD_GOAL_RANDOM_POS,
         play=True,
     )
