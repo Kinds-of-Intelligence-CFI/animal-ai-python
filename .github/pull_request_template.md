@@ -1,13 +1,16 @@
+### PR Description
+
+_Why was this PR produced? Give detailed reasons for your PR._
+
 ### Proposed change(s)
 
-_i.e. what this PR does, and why it should be merged._
+_Describe the changes made in this PR._
 
-### Useful links (Github issues, ML-Agents forum threads etc.)
+### Useful links (Github issues, discussion threads, etc.)
 
-
+_i.e. fixed issue #999._
 
 ### Types of change(s)
-
 - [ ] Bug fix
 - [ ] New feature
 - [ ] Code refactor
@@ -16,17 +19,11 @@ _i.e. what this PR does, and why it should be merged._
 - [ ] Other (please describe)
 
 ### Checklist
-
 - [ ] Added tests that prove my fix is effective or that my feature works
 - [ ] Updated the changelog (if applicable)
 - [ ] Updated the documentation (if applicable)
 - [ ] Updated the migration guide (if applicable)
 
-### Other comments
-
-
+### Other comments (if any)
 
 ### Screenshots (if any)
-
-
-
