@@ -27,9 +27,9 @@ classifiers = [
     "Operating System :: MacOS :: MacOS X",
     "Operating System :: POSIX :: Linux",
 ]
-requires-python = ">=3.8, <3.10"
+requires-python = ">=3.10.12, <3.10.13"
 dependencies = [
-    "mlagents_envs==0.30.0",
+    "mlagents_envs==1.0.0",
     "numpy",
     "protobuf==3.20.3",
 ]
