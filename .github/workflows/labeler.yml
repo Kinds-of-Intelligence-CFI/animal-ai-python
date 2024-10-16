@@ -1,0 +1,32 @@
+name: "Label Changes Based on File Paths"
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - '**/*.md'
+      - 'docs/**'
+      - '.github/workflows/**'
+      - '**/*.yaml'
+      - '**/*.yml'
+      - 'tests/**'
+  pull_request:
+    paths:
+      - 'src/**'
+      - '**/*.md'
+      - 'docs/**'
+      - '.github/workflows/**'
+      - '**/*.yaml'
+      - '**/*.yml'
+      - 'tests/**'
+
+jobs:
+  apply-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/labeler@v3
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          configuration-path: .github/labeler.yml
