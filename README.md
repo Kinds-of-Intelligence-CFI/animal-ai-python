@@ -8,17 +8,21 @@ This repository manages the Python interface for the Animal-AI environment.
 
 The main project repository is located [here](https://github.com/Kinds-of-Intelligence-CFI/animal-ai).
 
-* **Website:** [https://www.animalai.org](https://animalai.org/)
-* **Documentation:** [https://animalai.org/doc](https://github.com/Kinds-of-Intelligence-CFI/animal-ai/tree/main/docs)
-* **Unity Source code:** [https://github.com/Kinds-of-Intelligence-CFI/animal-ai-unity-project](https://github.com/Kinds-of-Intelligence-CFI/animal-ai-unity-project)
-* **Python Source code:** [https://github.com/Kinds-of-Intelligence-CFI/animal-ai-python](https://github.com/Kinds-of-Intelligence-CFI/animal-ai-python)
-* **Bug reports:** [https://github.com/Kinds-of-Intelligence-CFI/animal-ai/issues](https://github.com/Kinds-of-Intelligence-CFI/animal-ai/issues)
+* **Website:** [here](https://sites.google.com/csah.cam.ac.uk/animalai/)
+* **Unity Source code:** [here](https://github.com/Kinds-of-Intelligence-CFI/animal-ai-unity-project)
+* **Python Source code:** [here](https://github.com/Kinds-of-Intelligence-CFI/animal-ai-python)
+* **Bug reports:** [here](https://github.com/Kinds-of-Intelligence-CFI/animal-ai/issues)
 
 For more information about the ways you can contribute to Animal-AI, visit our website. If you’re unsure where to start or how your skills fit in, reach out! You can ask on GitHub, by opening a new issue or leaving a comment on a relevant issue that is already open.
 
 If you are new to contributing to open source, [this](https://github.com/Kinds-of-Intelligence-CFI/animal-ai/blob/main/CONTRIBUTING.md) guide helps explain why, what, and how to successfully get involved.
 
 ## Version History
+* v4.2.0
+**Note: Version 4.2.0 is not backward compatible with previous versions of Animal-AI due to breaking changes.**
+  + Minimum Python version is now 3.10.0 (breaking change).
+  + Upgraded to mlagents 3.0.0 (mlagents-env>=1.0.0).
+  + Adds no graphics monitor support.
 * v4.1.0
   + Updated `RaycastParser` to accept new object:
     - `HollowBox`.
@@ -29,11 +33,11 @@ If you are new to contributing to open source, [this](https://github.com/Kinds-o
   + Updated RaycastParser to accept two new objects:
     - `DecoyGoal` and `DecoyGoalBounce`.
 * v4.0.0
+**Note: Version 4.0.0 is not backward compatible with previous versions of Animal-AI due to breaking changes.**
   + Only implements _`mlagents 0.30.0`_ package to avoid dependency issues; also reduces package size considerably.
   + Cleaned up package and removed redundant files.
   + Implemented tests for the package.
   + Added documentation for the package.
-**Note: Version 4.0.0 is not backward compatible with previous versions of Animal-AI due to the significance of the changes made.**
 * v3.0.5
   + Removed redundant packages in `setup.py`.
   + Added download stats.
