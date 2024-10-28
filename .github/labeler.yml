@@ -1,0 +1,21 @@
+# Label for changes in Python source code
+python-source:
+  - 'src/**'
+
+# Label for changes in documentation files
+docs:
+  - '**/*.md'
+  - 'docs/**'
+
+# Label for changes related to CI/CD workflows
+ci-cd:
+  - '.github/workflows/**'
+
+# Label for changes in YAML configuration files
+config:
+  - '**/*.yaml'
+  - '**/*.yml'
+
+# Label for changes in test files
+tests:
+  - 'tests/**'
