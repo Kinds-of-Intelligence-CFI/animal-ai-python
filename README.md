@@ -20,8 +20,8 @@ If you are new to contributing to open source, [this](https://github.com/Kinds-o
 ## Version History
 * v4.2.0
 **Note: Version 4.2.0 is not backward compatible with previous versions of Animal-AI due to breaking changes.**
-  + Minimum Python version is now 3.10.0 (breaking change).
-  + Upgraded to mlagents 3.0.0 (mlagents-env>=1.0.0).
+  + Minimum Python version is now `3.10.0` (breaking change).
+  + Upgraded to ml-agents-ml-env `1.0.0`.
   + Adds no graphics monitor support.
 * v4.1.0
   + Updated `RaycastParser` to accept new object:
