@@ -29,6 +29,7 @@ class RayCastObjects(enum.Enum):
     DECOYGOAL = 12
     DECOYGOALBOUNCE = 13
     HOLLOWBOX = 14
+    BADGOALMULTI = 15
 
 
 class RayCastParser:
