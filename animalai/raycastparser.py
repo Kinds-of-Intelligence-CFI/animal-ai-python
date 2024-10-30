@@ -24,12 +24,13 @@ class RayCastObjects(enum.Enum):
     DEATHZONE = 7
     HOTZONE = 8
     RAMP = 9
-    PILLARBUTTON = 10
-    SIGNPOSTER = 11
+    SPAWNERBUTTON = 10
+    SIGNBOARD = 11
     DECOYGOAL = 12
     DECOYGOALBOUNCE = 13
     HOLLOWBOX = 14
     BADGOALMULTI = 15
+    DATAZONE = 16
 
 
 class RayCastParser:
