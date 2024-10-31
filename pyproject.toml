@@ -1,7 +1,7 @@
 [project]
 name = "animalai"
-version = "4.1.0"
-description = "Animal AI Python API"
+version = "5.0.0"
+description = "Animal-AI Python API"
 license = "MIT"
 readme = "README.md"
 authors = [
@@ -18,18 +18,15 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "License :: OSI Approved :: Apache Software License",
-    "Programming Language :: Python :: 3.6",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
     "Operating System :: Microsoft :: Windows :: Windows 10",
     "Operating System :: Microsoft :: Windows :: Windows 11",
     "Operating System :: MacOS :: MacOS X",
     "Operating System :: POSIX :: Linux",
 ]
-requires-python = ">=3.8, <3.10"
+requires-python = ">=3.10.12, <3.10.13"
 dependencies = [
-    "mlagents_envs==0.30.0",
+    "mlagents_envs>=1.0.0",
     "numpy",
     "protobuf==3.20.3",
 ]
