@@ -18,6 +18,8 @@ For more information about the ways you can contribute to Animal-AI, visit our w
 If you are new to contributing to open source, [this](https://github.com/Kinds-of-Intelligence-CFI/animal-ai/blob/main/CONTRIBUTING.md) guide helps explain why, what, and how to successfully get involved.
 
 ## Version History
+* v5.0.1
+  + Added new contributor to list of PyPI contributors list.
 * v5.0.0
 **Note: Version 5.0.0 is not backward compatible with previous versions of Animal-AI due to breaking changes.**
   + Minimum Python version is now `3.10.0 (<3.10.13)` (breaking change).

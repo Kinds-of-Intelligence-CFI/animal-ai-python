@@ -1,6 +1,6 @@
 [project]
 name = "animalai"
-version = "5.0.0"
+version = "5.0.1"
 description = "Animal-AI Python API"
 license = "MIT"
 readme = "README.md"
@@ -12,6 +12,7 @@ authors = [
     { name = "Wout Schellaert" },
     { name = "Joel Holmes" },
     { name = "Ben Beyret" },
+    { name = "Ben Slater"},
 ]
 classifiers = [
     "Intended Audience :: Developers",
