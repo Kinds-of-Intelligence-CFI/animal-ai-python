@@ -1,8 +1,8 @@
 !ArenaConfig
 arenas:
   0: !Arena
-    pass_mark: 1
-    t: 500
+    passMark: 1
+    timeLimit:500
     items:
       - !Item
         name: Agent

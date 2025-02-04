@@ -2,8 +2,8 @@
 !ArenaConfig
 arenas:
   0: !Arena
-    pass_mark: 1
-    t: 100
+    passMark: 1
+    timeLimit:100
     items:
       - !Item
         name: Agent
@@ -17,8 +17,8 @@ arenas:
         sizes:
           - !Vector3 { x: 2, y: 2, z: 2 }
   1: !Arena
-    pass_mark: 1
-    t: 100
+    passMark: 1
+    timeLimit:100
     items:
       - !Item
         name: Agent
@@ -32,8 +32,8 @@ arenas:
         sizes:
           - !Vector3 { x: 2, y: 2, z: 2 }
   -1: !Arena # checking if -1 value is properly handled (should become 3rd arena)
-    pass_mark: 1
-    t: 100
+    passMark: 1
+    timeLimit:100
     items:
       - !Item
         name: Agent
