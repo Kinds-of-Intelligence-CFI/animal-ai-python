@@ -137,6 +137,7 @@ class AnimalAIEnvironment(UnityEnvironment):
         )
         self.play = play
         self.inference = inference
+        assert timeout is None or timeout > 0, "Timeout must be a positive integer."
         self.timeout = timeout or (10 if play else 60)
         self.side_channels = side_channels if side_channels else []
         self.arenas_parameters_side_channel = None
