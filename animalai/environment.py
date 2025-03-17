@@ -52,6 +52,7 @@ class AnimalAIEnvironment(UnityEnvironment):
         timescale: int = 1,
         targetFrameRate: int = 60,
         captureFrameRate: int = 0,
+        timeout: int | None = None,
     ):
         """
         Parameters
@@ -136,7 +137,7 @@ class AnimalAIEnvironment(UnityEnvironment):
         )
         self.play = play
         self.inference = inference
-        self.timeout = 10 if play else 60
+        self.timeout = timeout or (10 if play else 60)
         self.side_channels = side_channels if side_channels else []
         self.arenas_parameters_side_channel = None
         self.use_YAML = use_YAML
