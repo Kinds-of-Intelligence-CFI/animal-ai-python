@@ -57,7 +57,7 @@ class AnimalAIEnvironment(UnityEnvironment):
         Parameters
         ----------
         additional_args : List[str]
-            Currently not supported anymore. TODO.
+            Additional commandline arguments passed through to the unity executeable. Often useful for forcing GPU rendering using "-force-vulkan".
         log_folder : str
             Optional folder to write the Unity Player log file into. Requires absolute path.
         file_name : Optional[str]
@@ -153,7 +153,7 @@ class AnimalAIEnvironment(UnityEnvironment):
             seed=seed,
             no_graphics=no_graphics,
             timeout_wait=self.timeout,
-            additional_args=args,
+            additional_args=args + (additional_args or []),
             side_channels=self.side_channels,
             log_folder=log_folder,
         )
