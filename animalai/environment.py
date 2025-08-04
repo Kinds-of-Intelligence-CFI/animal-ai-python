@@ -1,6 +1,8 @@
+from time import sleep
 import uuid
 from typing import NamedTuple, Dict, Optional, List
 from mlagents_envs.environment import UnityEnvironment
+from mlagents_envs.envs.unity_gym_env import UnityToGymWrapper
 from mlagents_envs.rpc_communicator import UnityTimeOutException
 from mlagents_envs.side_channel.raw_bytes_channel import RawBytesChannel
 from mlagents_envs.side_channel.side_channel import SideChannel
@@ -269,3 +271,96 @@ class AnimalAIEnvironment(UnityEnvironment):
         args.append("--decisionPeriod")
         args.append(str(decisionPeriod))
         return args
+    
+    @classmethod
+    def make_vec_env(
+        cls, 
+        num_envs: int,
+        additional_args: Optional[List[str]] = None,
+        log_folder: str = "",
+        file_name: Optional[str] = None,
+        worker_id: int = 0,
+        base_port: int = 5005,
+        seed: int = 0,
+        play: bool = False,
+        arenas_configurations: str = "",
+        inference: bool = False,
+        useCamera: bool = True,
+        resolution: int = 150,
+        grayscale: bool = False,
+        useRayCasts: bool = False,
+        raysPerSide: int = 2,
+        rayMaxDegrees: int = 60,
+        decisionPeriod: int = 3,
+        side_channels: Optional[List[SideChannel]] = None,
+        no_graphics: bool = False,
+        use_YAML: bool = True,
+        timescale: int = 1,
+        targetFrameRate: int = 60,
+        captureFrameRate: int = 0,
+    ):
+        """Create a vectorized environment using SubprocVecEnv.
+        
+        Args:
+            num_envs: Number of parallel environments to create
+            
+        Returns:
+            SubprocVecEnv: Vectorized environment
+            
+        Raises:
+            ImportError: If required dependencies are not installed
+            ValueError: If num_envs is invalid
+        """
+        # Validate inputs first
+        if num_envs <= 0:
+            raise ValueError(f"Number of environments must be greater than 0, got: {num_envs}")
+        
+        
+        # Lazy import for optional dependency
+        try:
+            from stable_baselines3.common.vec_env import SubprocVecEnv
+        except ImportError:
+            raise ImportError(
+                "stable_baselines3 required for vectorized environments. "
+                "Install with: pip install stable-baselines3"
+            )
+        
+        def make_env(env_id: int):
+            """Create a single environment instance."""
+            def _init():
+                sleep(env_id * 5) # this is really ugly but we need to make sure the env start at different times so that the observation logs don't collide and cause errors
+                env = cls(
+                    additional_args=additional_args,
+                    log_folder=log_folder,
+                    file_name=file_name,
+                    worker_id=worker_id + env_id,  # Unique worker_id for each env
+                    base_port=base_port + env_id,   # Unique port for each env
+                    seed=seed + env_id,             # Different seed for each env
+                    play=play,
+                    arenas_configurations=arenas_configurations,
+                    inference=inference,
+                    useCamera=useCamera,
+                    resolution=resolution,
+                    grayscale=grayscale,
+                    useRayCasts=useRayCasts,
+                    raysPerSide=raysPerSide,
+                    rayMaxDegrees=rayMaxDegrees,
+                    decisionPeriod=decisionPeriod,
+                    side_channels=side_channels,
+                    no_graphics=no_graphics,
+                    use_YAML=use_YAML,
+                    timescale=timescale,
+                    targetFrameRate=targetFrameRate,
+                    captureFrameRate=captureFrameRate,
+                )
+                
+                return UnityToGymWrapper(
+                    env, 
+                    uint8_visual=True, 
+                    allow_multiple_obs=False, 
+                    flatten_branched=True
+                )
+            return _init
+        
+        env_fns = [make_env(i) for i in range(num_envs)]
+        return SubprocVecEnv(env_fns)
