@@ -1,3 +1,4 @@
+from pathlib import Path
 import uuid
 from typing import NamedTuple, Dict, Optional, List
 from mlagents_envs.environment import UnityEnvironment
@@ -8,6 +9,8 @@ from mlagents_envs.side_channel.engine_configuration_channel import (
     EngineConfig,
     EngineConfigurationChannel,
 )
+
+from animalai.executable import find_or_download_executable
 
 
 class PlayTrain(NamedTuple):
@@ -147,7 +150,7 @@ class AnimalAIEnvironment(UnityEnvironment):
         self.configure_side_channels(self.side_channels)
 
         super().__init__(
-            file_name=file_name,
+            file_name=file_name if file_name is not None else str(find_or_download_executable(base=Path(""))),
             worker_id=worker_id,
             base_port=base_port,
             seed=seed,
