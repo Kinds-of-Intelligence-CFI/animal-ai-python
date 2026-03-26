@@ -1,6 +1,5 @@
 """Download and cache Animal-AI Unity binaries from GitHub Releases."""
 
-import hashlib
 import os
 import shutil
 import stat
@@ -242,7 +241,7 @@ def download_binary(
 
     cache_dir = get_cache_dir()
     version_dir = cache_dir / "envs" / ver
-    platform_dir = version_dir # needs to be one level higher as the zip file contains a folder with the platform name in it
+    platform_dir = version_dir / platform
     complete_marker = version_dir / ".complete"
 
     # Already downloaded?
@@ -281,8 +280,8 @@ def download_binary(
         # should probably add a checeksum test here but it seems abit pointless to do if we're just gonna host them on github aswell 
 
         # Extract
-        print(f"Extracting to {platform_dir}...", file=sys.stderr)
-        extract_archive(archive_path, platform_dir)
+        print(f"Extracting to {version_dir}...")
+        extract_archive(archive_path, version_dir)
 
         # Clean up archive
         archive_path.unlink(missing_ok=True)
