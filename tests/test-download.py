@@ -23,7 +23,7 @@ from animalai.download import (
     get_cache_info,
     get_current_platform,
     get_package_version,
-    get_binary_vesion,
+    get_binary_version,
     get_release_url,
 )
 
@@ -61,14 +61,14 @@ class TestGetPackageVersion(unittest.TestCase):
     def test_binary_version_mapping(self, mock_version):
         known_version_string = "6.0.0"
         mock_version.return_value = known_version_string
-        self.assertEqual(get_binary_vesion(), VERSION_MAP[known_version_string])
+        self.assertEqual(get_binary_version(), VERSION_MAP[known_version_string])
 
     @patch("animalai.download.version")
     def test_binary_fallback_mapping(self, mock_version):
         # if no matching version foudn then default to equal mapping 
         test_version_string = "EXAMPLE_TEST_VERSION"
         mock_version.return_value = test_version_string
-        self.assertEqual(get_binary_vesion(), test_version_string)
+        self.assertEqual(get_binary_version(), test_version_string)
 
 
 class TestGetCurrentPlatform(unittest.TestCase):

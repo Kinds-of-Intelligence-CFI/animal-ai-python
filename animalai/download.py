@@ -57,7 +57,7 @@ def get_package_version() -> str:
             "Could not determine animalai package version. "
         )
 
-def get_binary_vesion() -> str:
+def get_binary_version() -> str:
     try:
         return VERSION_MAP[get_package_version()]
     except KeyError:
@@ -201,7 +201,7 @@ def find_cached_executable(ver: str | None = None) -> Path | None:
     """Look for an already-downloaded binary in the cache directory."""
     if ver is None:
         try:
-            ver = get_binary_vesion()
+            ver = get_binary_version()
         except DownloadError:
             return None
 
@@ -237,7 +237,7 @@ def download_binary(
     Returns the path to the platform directory containing the extracted binary.
     """
     if ver is None:
-        ver = get_binary_vesion()
+        ver = get_binary_version()
     if platform is None:
         platform = get_current_platform()
 
@@ -312,7 +312,7 @@ def cleanup_old_versions(keep_current: bool = True) -> list[str]:
         return []
 
     try:
-        current_version = get_binary_vesion() if keep_current else None
+        current_version = get_binary_version() if keep_current else None
     except DownloadError:
         current_version = None
 

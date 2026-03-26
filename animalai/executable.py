@@ -57,8 +57,7 @@ def find_or_download_executable(
         download_binary,
         find_cached_executable,
         get_current_platform,
-        get_binary_vesion,
-        get_release_url,
+        get_binary_version,
     )
 
     # 1. Try local directory
@@ -95,7 +94,7 @@ def find_or_download_executable(
     # Prompt on TTY
     if sys.stderr.isatty():
         try:
-            ver = get_binary_vesion
+            ver = get_binary_version()
             platform = get_current_platform()
         except DownloadError as e:
             raise FileNotFoundError(str(e))
