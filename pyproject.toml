@@ -34,8 +34,11 @@ dependencies = [
 "Website"         = "https://animalai.org/"
 "Repository"      = "https://github.com/Kinds-of-Intelligence-CFI/animal-ai-python"
 "Main Repository" = "https://github.com/Kinds-of-Intelligence-CFI/animal-ai"
-"Releases"        = "https://https://github.com/Kinds-of-Intelligence-CFI/animal-ai/releases"
+"Releases"        = "https://github.com/Kinds-of-Intelligence-CFI/animal-ai/releases"
 "Documentation"   = "https://github.com/Kinds-of-Intelligence-CFI/animal-ai/tree/main/docs"
+
+[project.scripts]
+animalai = "animalai.__main__:main"
 
 [build-system]
 requires      = ["hatchling"]
