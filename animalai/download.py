@@ -25,10 +25,11 @@ BINARY_NAMES = {
     "MacOS": "MacOS.app",
 }
 
-# map the animal_ai-python versions to the animal_ai-unity versions are
+# map the animal_ai-python versions to the animal_ai-unity versions
 VERSION_MAP = {
     "6.0.0" : "v4.3.0"
 }
+MOST_RECENT_VERSION = "v4.3.0"
 
 
 class DownloadError(Exception):
@@ -61,8 +62,8 @@ def get_binary_version() -> str:
     try:
         return VERSION_MAP[get_package_version()]
     except KeyError:
-        print(f"Could not find specific version mapping for version {get_package_version()}, defaulting to identical mapping")
-        return get_package_version()
+        print(f"Could not find specific version mapping for version {get_package_version()}, defaulting to most recent version {MOST_RECENT_VERSION}")
+        return MOST_RECENT_VERSION
 
 def get_current_platform() -> str:
     platform_map = {
@@ -87,7 +88,7 @@ def _release_url(version: str, filename: str) -> str:
 
 
 def get_release_url(ver: str, platform: str) -> str:
-    archive = ARCHIVE_TEMPLATE.format(platform=platform, version=ver)
+    archive = ARCHIVE_TEMPLATE.format(platform=platform)
     return _release_url(ver, archive)
 
 
