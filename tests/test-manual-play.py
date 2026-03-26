@@ -12,7 +12,6 @@ class TestManualPlay(unittest.TestCase):
 
         # Initialize the AnimalAI environment from environment.py script
         env = AnimalAIEnvironment(
-            file_name='test/executable',
             base_port=5005 + random.randint(0, 1000),
             play=True,  # Here, we check if play mode is launched correctly
         )
