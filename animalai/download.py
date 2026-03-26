@@ -113,8 +113,7 @@ def download_file(url: str, dest: Path, timeout: int = 30) -> None:
         if attempt > 0:
             delay = RETRY_BASE_DELAY ** attempt
             print(
-                f"  Retry {attempt}/{MAX_RETRIES - 1} after {delay}s...",
-                file=sys.stderr,
+                f"  Retry {attempt}/{MAX_RETRIES - 1} after {delay}s..."
             )
             time.sleep(delay)
 
@@ -132,16 +131,15 @@ def download_file(url: str, dest: Path, timeout: int = 30) -> None:
                             break
                         f.write(chunk)
                         downloaded += len(chunk)
-                        if sys.stderr.isatty():
+                        if sys.stdout.isatty():
                             print(
                                 _progress_bar(downloaded, total_size),
                                 end="",
-                                file=sys.stderr,
                                 flush=True,
                             )
 
-                if sys.stderr.isatty():
-                    print(file=sys.stderr)
+                if sys.stdout.isatty():
+                    print(file=sys.stdout)
                 return
 
         except (HTTPError, URLError, TimeoutError, OSError) as e:
@@ -250,12 +248,11 @@ def download_binary(
     if complete_marker.exists() and platform_dir.exists() and not force:
         cached = find_cached_executable(ver)
         if cached is not None:
-            print(f"Binary already cached at {platform_dir}", file=sys.stderr)
+            print(f"Binary already cached at {platform_dir}")
             return cached
         # .complete exists but binary not found -- re-download
         print(
-            "Cache marker exists but binary not found. Re-downloading...",
-            file=sys.stderr,
+            "Cache marker exists but binary not found. Re-downloading..."
         )
 
     if force and platform_dir.exists():
@@ -269,7 +266,6 @@ def download_binary(
     with _download_lock(version_dir):
         print(
             f"Downloading {archive_name} from GitHub Releases...",
-            file=sys.stderr,
         )
         try:
             download_file(archive_url, archive_path)
@@ -300,7 +296,7 @@ def download_binary(
             f"Expected one of: {', '.join(BINARY_NAMES.values())}"
         )
 
-    print(f"Done. Binary at: {executable}", file=sys.stderr)
+    print(f"Done. Binary at: {executable}")
     return executable
 
 
