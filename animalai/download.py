@@ -13,6 +13,8 @@ from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
+from tqdm import tqdm
+
 GITHUB_REPO = "Kinds-of-Intelligence-CFI/animal-ai"
 ARCHIVE_TEMPLATE = "{platform}.zip"
 CHUNK_SIZE = 65536
@@ -88,19 +90,6 @@ def get_release_url(ver: str, platform: str) -> str:
     return _release_url(ver, archive)
 
 
-def _progress_bar(current: int, total: int | None, width: int = 40) -> str:
-    if total and total > 0:
-        fraction = current / total
-        filled = int(width * fraction)
-        bar = "#" * filled + "-" * (width - filled)
-        mb_current = current / (1024 * 1024)
-        mb_total = total / (1024 * 1024)
-        return f"\r  [{bar}] {mb_current:.1f}/{mb_total:.1f} MB ({fraction:.0%})"
-    else:
-        mb_current = current / (1024 * 1024)
-        return f"\r  Downloaded {mb_current:.1f} MB..."
-
-
 def download_file(url: str, dest: Path, timeout: int = 30) -> None:
     """Download a file with retries and progress display."""
     dest.parent.mkdir(parents=True, exist_ok=True)
@@ -120,23 +109,15 @@ def download_file(url: str, dest: Path, timeout: int = 30) -> None:
                 total = response.headers.get("Content-Length")
                 total_size = int(total) if total else None
 
-                with open(dest, "wb") as f:
-                    downloaded = 0
-                    while True:
-                        chunk = response.read(CHUNK_SIZE)
-                        if not chunk:
-                            break
-                        f.write(chunk)
-                        downloaded += len(chunk)
-                        if sys.stdout.isatty():
-                            print(
-                                _progress_bar(downloaded, total_size),
-                                end="",
-                                flush=True,
-                            )
+                with tqdm(total=total_size, unit="B", unit_scale=True) as pbar:
+                    with open(dest, "wb") as f:
+                        while True:
+                            chunk = response.read(CHUNK_SIZE)
+                            if not chunk:
+                                break
+                            f.write(chunk)
+                            pbar.update(len(chunk))
 
-                if sys.stdout.isatty():
-                    print(file=sys.stdout)
                 return
 
         except (HTTPError, URLError, TimeoutError, OSError) as e:
