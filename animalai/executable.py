@@ -2,6 +2,14 @@ import os
 import sys
 from pathlib import Path
 
+from animalai.download import (
+    DownloadError,
+    download_binary,
+    find_cached_executable,
+    get_current_platform,
+    get_binary_version,
+)
+
 
 def find_executable(base: Path) -> Path:
     """
@@ -52,13 +60,6 @@ def find_or_download_executable(
     2. Cached download in ~/.animalai/
     3. Auto-download from GitHub Releases (if enabled)
     """
-    from animalai.download import (
-        DownloadError,
-        download_binary,
-        find_cached_executable,
-        get_current_platform,
-        get_binary_version,
-    )
 
     # 1. Try local directory
     if base is not None:
