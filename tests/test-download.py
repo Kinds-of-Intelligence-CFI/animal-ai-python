@@ -11,7 +11,6 @@ from unittest.mock import MagicMock, patch
 
 from animalai.download import (
     ARCHIVE_TEMPLATE,
-    VERSION_MAP,
     DownloadError,
     UnsupportedPlatformError,
     cleanup_old_versions,
@@ -25,6 +24,7 @@ from animalai.download import (
     get_package_version,
     get_binary_version,
     get_release_url,
+    verify_checksum,
 )
 
 
@@ -57,18 +57,6 @@ class TestGetPackageVersion(unittest.TestCase):
         result = get_package_version()
         self.assertRegex(result, r"\d+\.\d+\.\d+")
     
-    @patch("animalai.download.version")
-    def test_binary_version_mapping(self, mock_version):
-        known_version_string = "6.0.0"
-        mock_version.return_value = known_version_string
-        self.assertEqual(get_binary_version(), VERSION_MAP[known_version_string])
-
-    @patch("animalai.download.version")
-    def test_binary_fallback_mapping(self, mock_version):
-        # if no matching version foudn then default to equal mapping 
-        test_version_string = "EXAMPLE_TEST_VERSION"
-        mock_version.return_value = test_version_string
-        self.assertEqual(get_binary_version(), test_version_string)
 
 
 class TestGetCurrentPlatform(unittest.TestCase):
@@ -277,7 +265,7 @@ class TestCleanupOldVersions(unittest.TestCase):
             cache_dir = Path(tmpdir)
             envs_dir = cache_dir / "envs"
             (envs_dir / "5.0.0" / "Linux").mkdir(parents=True)
-            (envs_dir / VERSION_MAP["6.0.0"] / "Linux").mkdir(parents=True)
+            (envs_dir / get_binary_version() / "Linux").mkdir(parents=True)
 
             with patch("animalai.download.get_cache_dir", return_value=cache_dir):
                 with patch("animalai.download.get_package_version", return_value="6.0.0"):
@@ -285,7 +273,7 @@ class TestCleanupOldVersions(unittest.TestCase):
 
             self.assertEqual(removed, ["5.0.0"])
             self.assertFalse((envs_dir / "5.0.0").exists())
-            self.assertTrue((envs_dir / VERSION_MAP["6.0.0"]).exists())
+            self.assertTrue((envs_dir / get_binary_version()).exists())
 
     def test_removes_all_when_requested(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -326,6 +314,42 @@ class TestCacheInfo(unittest.TestCase):
             self.assertEqual(info["versions"][0]["version"], "6.0.0")
             self.assertTrue(info["versions"][0]["complete"])
             self.assertIn("Linux", info["versions"][0]["platforms"])
+
+
+class TestVerifyChecksum(unittest.TestCase):
+    def test_valid_checksum_passes(self):
+        data = b"hello world"
+        digest = hashlib.sha256(data).hexdigest()
+        with tempfile.NamedTemporaryFile(delete=False) as f:
+            f.write(data)
+            f.flush()
+            try:
+                verify_checksum(Path(f.name), f"sha256:{digest}")
+            finally:
+                os.unlink(f.name)
+
+    def test_mismatched_checksum_raises(self):
+        data = b"hello world"
+        with tempfile.NamedTemporaryFile(delete=False) as f:
+            f.write(data)
+            f.flush()
+            try:
+                with self.assertRaises(DownloadError) as ctx:
+                    verify_checksum(Path(f.name), "sha256:0000dead")
+                self.assertIn("Checksum mismatch", str(ctx.exception))
+            finally:
+                os.unlink(f.name)
+
+    def test_invalid_format_raises(self):
+        with tempfile.NamedTemporaryFile(delete=False) as f:
+            f.write(b"data")
+            f.flush()
+            try:
+                with self.assertRaises(DownloadError) as ctx:
+                    verify_checksum(Path(f.name), "nocolon")
+                self.assertIn("Invalid checksum format", str(ctx.exception))
+            finally:
+                os.unlink(f.name)
 
 
 class TestLockFile(unittest.TestCase):

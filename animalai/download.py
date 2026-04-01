@@ -1,5 +1,6 @@
 """Download and cache Animal-AI Unity binaries from GitHub Releases."""
 
+import hashlib
 import os
 import shutil
 import stat
@@ -24,12 +25,12 @@ BINARY_NAMES = {
     "MacOS": "MacOS.app",
 }
 
-# map the animal_ai-python versions to the animal_ai-unity versions
-VERSION_MAP = {
-    "6.0.0" : "v4.3.0"
-}
 MOST_RECENT_VERSION = "v4.3.0"
-
+CHECKSUMS = {
+    "Windows": "sha256:be9c7bc1b620530446d69672701a510a1bd4fd55f6844d5becac3b5efd300a17",
+    "Linux": "sha256:64bc4f77aa5fe37e413ec5b09b7cbff06a752cace5eb9d65fee37878267d029f",
+    "MacOS": "sha256:16f576b9e0ecb5012ee126a8dc3fe818573080e307c5598fe013b1c5d4f0b842",
+}
 
 class DownloadError(Exception):
     pass
@@ -58,11 +59,7 @@ def get_package_version() -> str:
         )
 
 def get_binary_version() -> str:
-    try:
-        return VERSION_MAP[get_package_version()]
-    except KeyError:
-        print(f"Could not find specific version mapping for version {get_package_version()}, defaulting to most recent version {MOST_RECENT_VERSION}")
-        return MOST_RECENT_VERSION
+    return MOST_RECENT_VERSION
 
 def get_current_platform() -> str:
     platform_map = {
@@ -151,6 +148,24 @@ def download_file(url: str, dest: Path, timeout: int = 30) -> None:
         f"Failed to download {url} after {MAX_RETRIES} attempts: {last_error}"
     )
 
+
+
+def verify_checksum(file_path: Path, expected: str) -> None:
+    """Verify a file's checksum against an expected 'algorithm:hex' string."""
+    algo, _, expected_digest = expected.partition(":")
+    if not expected_digest:
+        raise DownloadError(f"Invalid checksum format: {expected}")
+    h = hashlib.new(algo)
+    with open(file_path, "rb") as f:
+        while chunk := f.read(CHUNK_SIZE):
+            h.update(chunk)
+    actual_digest = h.hexdigest()
+    if actual_digest != expected_digest:
+        raise DownloadError(
+            f"Checksum mismatch for {file_path.name}:\n"
+            f"  expected: {expected}\n"
+            f"  actual:   {algo}:{actual_digest}"
+        )
 
 
 def extract_archive(archive_path: Path, dest_dir: Path) -> None:
@@ -277,7 +292,8 @@ def download_binary(
                 f"Extract it to: {platform_dir}"
             )
 
-        # should probably add a checeksum test here but it seems abit pointless to do if we're just gonna host them on github aswell 
+        print("Verifying checksum...")
+        verify_checksum(archive_path, CHECKSUMS[platform])
 
         # Extract
         print(f"Extracting to {version_dir}...")
