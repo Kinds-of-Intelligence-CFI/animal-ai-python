@@ -150,7 +150,7 @@ class AnimalAIEnvironment(UnityEnvironment):
         self.configure_side_channels(self.side_channels)
 
         super().__init__(
-            file_name=file_name if file_name is not None else str(find_or_download_executable(base=Path(""))),
+            file_name=file_name or find_or_download_executable(),
             worker_id=worker_id,
             base_port=base_port,
             seed=seed,

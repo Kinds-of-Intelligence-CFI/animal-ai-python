@@ -51,8 +51,8 @@ def find_executable(base: Path) -> Path:
 
 
 def find_or_download_executable(
-    base: Path | None = None, auto_download: bool = True
-) -> Path:
+    base: Path = Path(""), auto_download: bool = True
+) -> str:
     """Find the AAI binary locally, in cache, or by downloading it.
 
     Search order:
@@ -62,16 +62,15 @@ def find_or_download_executable(
     """
 
     # 1. Try local directory
-    if base is not None:
-        try:
-            return find_executable(base)
-        except FileNotFoundError:
-            pass
+    try:
+        return str(find_executable(base))
+    except FileNotFoundError:
+        pass
 
     # 2. Try cache
     cached = find_cached_executable()
     if cached is not None:
-        return cached
+        return str(cached)
 
     # 3. Auto-download
     auto_download_env = os.environ.get("ANIMALAI_AUTO_DOWNLOAD", "1").lower()
@@ -114,4 +113,4 @@ def find_or_download_executable(
                 "Download cancelled. Run 'python -m animalai download' later."
             )
 
-    return download_binary()
+    return str(download_binary())
