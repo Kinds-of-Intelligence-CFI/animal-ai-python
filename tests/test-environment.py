@@ -21,7 +21,7 @@ class TestEnvironmentInitialization(unittest.TestCase):
     def test_initialization_with_custom_parameters(self, mock_env):
         """Test initialization with custom parameters."""
         env = AnimalAIEnvironment(
-            file_name="custom_file.yml", worker_id=2
+            arenas_configurations="custom_file.yml", worker_id=2
         )  # For custom file path, use full path.
         mock_env.assert_called_once()
         self.assertIsNotNone(env)
