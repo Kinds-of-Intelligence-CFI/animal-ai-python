@@ -47,3 +47,9 @@ class KaggleWrapper(actors.Actor):
             return self._send("EPISODE FINISHED!", is_visible_to_llm=True)
 
         return self._send(f"LAST MOVE REWARD: {reward}", is_visible_to_llm=True)
+    
+    def close(self):
+        self.game_wrapper.close()
+
+    def is_finished(self)-> bool:
+        return self.game_wrapper.is_finished()

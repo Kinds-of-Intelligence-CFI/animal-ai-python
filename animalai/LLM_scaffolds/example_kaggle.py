@@ -35,11 +35,11 @@ def can_it_play_aai(llm):
                 llm.respond()
                 aai.respond()
 
-                if aai.game_wrapper.is_finished():
+                if aai.is_finished():
                     break
 
     finally:
-        aai.game_wrapper.close()
+        aai.close()
 
     assertions.assert_true(
         aai.game_wrapper.total_reward > 0,
