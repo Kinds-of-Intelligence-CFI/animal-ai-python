@@ -13,7 +13,7 @@ try:
         computer,
     )
     from inspect_ai.scorer import Score, Scorer, Target, accuracy, mean, scorer, std
-    from inspect_ai.solver import TaskState
+    from inspect_ai.solver import Generate, Solver, TaskState, basic_agent, solver
     from inspect_ai.util import StoreModel, message_limit, store_as
     from inspect_ai.model import ChatMessageAssistant, Content, ContentImage, ContentText
 except ImportError as e:
@@ -99,6 +99,14 @@ def act(scaffold_type: type[EnvironmentScaffold], state: TaskState, instance: st
             raise ValueError(f"Unexpected observation type: {type(obs)}")
 
     return execute
+
+@solver
+def add_act_tool(scaffold_type: type[EnvironmentScaffold]) -> Solver:
+    async def solve(state: TaskState, generate: Generate) -> TaskState:
+        state.tools.append(act(scaffold_type=scaffold_type, state=state))
+        return state
+    
+    return solve
 
 @scorer(metrics=[mean(), std()])
 def total_reward_scorer() -> Scorer:

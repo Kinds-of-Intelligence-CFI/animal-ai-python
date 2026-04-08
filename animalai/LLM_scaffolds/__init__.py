@@ -1,6 +1,6 @@
 from animalai.LLM_scaffolds.environment_scaffolds import EnvironmentScaffold, FrameByFrameScaffold
 
-__all__ = ["EnvironmentScaffold", "FrameByFrameScaffold", "KaggleWrapper", "act", "total_reward_scorer"]
+__all__ = ["EnvironmentScaffold", "FrameByFrameScaffold", "KaggleWrapper", "act", "total_reward_scorer", "add_act_tool"]
 
 def __getattr__(name):
     if name == "KaggleWrapper":
@@ -12,4 +12,7 @@ def __getattr__(name):
     if name == "total_reward_scorer":
         from animalai.LLM_scaffolds.inspect_wrapper import total_reward_scorer
         return total_reward_scorer
+    if name == "add_act_tool":
+        from animalai.LLM_scaffolds.inspect_wrapper import add_act_tool
+        return add_act_tool
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
