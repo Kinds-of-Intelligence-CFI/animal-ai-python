@@ -1,14 +1,21 @@
 
 from animalai.LLM_scaffolds.environment_scaffolds import EnvironmentScaffold
-from kaggle_benchmarks import (
-    actors,
-    assertions,
-    chats,
-    content_types,
-    llm,
-    messages,
-    task,
-)
+
+try:
+    from kaggle_benchmarks import (
+        actors,
+        assertions,
+        chats,
+        content_types,
+        llm,
+        messages,
+        task,
+    )
+except ImportError as e:
+    raise ImportError(
+        "KaggleWrapper requires the 'kaggle-benchmarks' package. "
+        "Install it with: pip install animalai[kaggle]"
+    ) from e
 
 class KaggleWrapper(actors.Actor):
     """Actor that drives the Animal-AI environment."""
