@@ -5,8 +5,6 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 import numpy as np
-import moviepy
-from PIL import Image
 
 from animalai.environment import AnimalAIEnvironment
 from mlagents_envs.base_env import ActionTuple
@@ -107,7 +105,7 @@ class FrameByFrameScaffold(EnvironmentScaffold):
     """Scaffold that provides a frame-by-frame interface for llms to act in animal ai."""
     def __init__(self, env: AnimalAIEnvironment):
         super().__init__(env)
-        self.frames: list[np.ndarray] = []
+        self.last_frame: np.ndarray = np.array([])
         self.total_steps = 0
         self._total_reward = 0.0
         self._done = False
@@ -156,41 +154,30 @@ class FrameByFrameScaffold(EnvironmentScaffold):
             if len(terminal_steps) > 0:
                 reward += terminal_steps.reward[0]
                 obs = _process_obs(terminal_steps.obs[0][0])
-                self.frames.append(obs)
+                self.last_frame = obs
                 self._done = True
             elif len(decision_steps) > 0:
                 reward += decision_steps.reward[0]
                 obs = _process_obs(decision_steps.obs[0][0])
-                self.frames.append(obs)
+                self.last_frame = obs
     
         self._total_reward += reward
         self.total_steps += 1
-        return self.frames[-1], reward, self._done, {}
+        return self.last_frame, reward, self._done, {}
     
     def reset(self) -> tuple[Any, dict]:
-        self.frames = []
+        self.last_frame = np.array([])
         self.total_steps = 0
         self._total_reward = 0.0
         self._done = False
         self._collect_obs()
-        return self.frames[-1], {}
+        return self.last_frame, {}
 
     def is_finished(self) -> bool:
         return self._done
 
-    def display(self) -> Image.Image:
-        return Image.fromarray(self.frames[-1])
-
-    def display_video(self):
-        video = moviepy.ImageSequenceClip(self.frames, fps=10)
-        return moviepy.display_in_notebook(
-            video, verbose=False, rd_kwargs=dict(logger=None)
-        )
-
     def get_results(self) -> dict:
         return {"num_steps": self.total_steps, "total_reward": self._total_reward}
 
-    def repeat_last_frame(self, n: int):
-        self.frames += [self.frames[-1]] * n
 
 
