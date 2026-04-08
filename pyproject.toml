@@ -26,8 +26,12 @@ classifiers = [
 ]
 requires-python = ">=3.14"
 dependencies = [
+    "gym>=0.26.2",
+    "kaggle-benchmarks>=0.3.0",
     "mlagents-envs-aai>=1.0.0",
+    "moviepy>=2.2.1",
     "numpy",
+    "protobuf>=6.31.1",
 ]
 
 [project.urls]
@@ -44,3 +48,7 @@ build-backend = "hatchling.build"
 [tool.rye]
 managed          = true
 dev-dependencies = []
+                               
+
+[tool.uv]
+override-dependencies = ["protobuf>=6.31.1"] 
