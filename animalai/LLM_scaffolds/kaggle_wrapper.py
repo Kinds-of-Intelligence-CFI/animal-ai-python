@@ -35,7 +35,7 @@ class KaggleWrapper(actors.Actor):
 
     def initialize(self, start_prompt: str | None = None):
         if start_prompt is None:
-            start_prompt = self.game_wrapper.default_system_prompt
+            start_prompt = self.game_wrapper.get_default_system_prompt()
         self._send(start_prompt, is_visible_to_llm=True)
         obs, _ = self.game_wrapper.reset()
         self._send(content_types.images.from_array(obs), is_visible_to_llm=True)

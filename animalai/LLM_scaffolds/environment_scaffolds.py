@@ -39,11 +39,12 @@ class EnvironmentScaffold[ObsType](ABC):
         """Returns a list of available actions that the LLM can choose from."""
         raise NotImplementedError
     
-    @property
-    def default_system_prompt(self) -> str:
+    @staticmethod
+    @abstractmethod
+    def get_default_system_prompt() -> str:
         """Returns a default system prompt to prime the LLM with."""
         raise NotImplementedError
-    
+
     @property
     def total_reward(self) -> float:
         """Returns the total reward accumulated so far."""
@@ -102,6 +103,11 @@ def _process_obs(obs: np.ndarray) -> np.ndarray:
 
 class FrameByFrameScaffold(EnvironmentScaffold[np.ndarray]):
     """Scaffold that provides a frame-by-frame interface for llms to act in animal ai."""
+
+    @staticmethod
+    def get_default_system_prompt() -> str:
+        return START_PROMPT.format(actions=AVAILABLE_ACTIONS)
+
     def __init__(self, env: AnimalAIEnvironment):
         super().__init__(env)
         self.last_frame: np.ndarray = np.array([])
@@ -119,16 +125,12 @@ class FrameByFrameScaffold(EnvironmentScaffold[np.ndarray]):
             self._done = True
         else:
             obs = _process_obs(decision_steps.obs[0][0])
-        self.frames.append(obs)
+        self.last_frame = obs
         return obs
 
     @property
     def available_actions(self) -> list[str]:
         return AVAILABLE_ACTIONS
-    
-    @property
-    def default_system_prompt(self) -> str:
-        return START_PROMPT.format(actions=self.available_actions)
 
     def step(self, action: str, skipframe: int = 3) -> tuple[np.ndarray, float, bool, dict]:
         if isinstance(action, str):
