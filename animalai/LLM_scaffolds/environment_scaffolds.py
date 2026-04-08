@@ -2,7 +2,6 @@
 
 
 from abc import ABC, abstractmethod
-from typing import Any
 
 import numpy as np
 
@@ -12,18 +11,18 @@ from mlagents_envs.base_env import ActionTuple
 
 
 
-class EnvironmentScaffold(ABC):
+class EnvironmentScaffold[ObsType](ABC):
     """Abstract base class for environment scaffolds which handle turning actions from an llm (whatever the harness) into actions in AAI and return some results."""
     def __init__(self, env: AnimalAIEnvironment):
         self.env = env
 
     @abstractmethod
-    def step(self, action: str) -> tuple[Any, float, bool, dict]:
+    def step(self, action: str) -> tuple[ObsType, float, bool, dict]:
         """Takes an action and returns (obs, reward, done, info) following gym convention."""
         raise NotImplementedError
-    
+
     @abstractmethod
-    def reset(self) -> tuple[Any, dict]:
+    def reset(self) -> tuple[ObsType, dict]:
         """Resets the environment and returns the initial observation."""
         raise NotImplementedError
     
@@ -101,7 +100,7 @@ def _process_obs(obs: np.ndarray) -> np.ndarray:
         obs = (obs * 255).astype(np.uint8)
     return obs
 
-class FrameByFrameScaffold(EnvironmentScaffold):
+class FrameByFrameScaffold(EnvironmentScaffold[np.ndarray]):
     """Scaffold that provides a frame-by-frame interface for llms to act in animal ai."""
     def __init__(self, env: AnimalAIEnvironment):
         super().__init__(env)
@@ -131,7 +130,7 @@ class FrameByFrameScaffold(EnvironmentScaffold):
     def default_system_prompt(self) -> str:
         return START_PROMPT.format(actions=self.available_actions)
 
-    def step(self, action: str, skipframe: int = 3) -> tuple[Any, float, bool, dict]:
+    def step(self, action: str, skipframe: int = 3) -> tuple[np.ndarray, float, bool, dict]:
         if isinstance(action, str):
             branch0, branch1 = ACTION_MAP[action]
         else:
@@ -165,7 +164,7 @@ class FrameByFrameScaffold(EnvironmentScaffold):
         self.total_steps += 1
         return self.last_frame, reward, self._done, {}
     
-    def reset(self) -> tuple[Any, dict]:
+    def reset(self) -> tuple[np.ndarray, dict]:
         self.last_frame = np.array([])
         self.total_steps = 0
         self._total_reward = 0.0

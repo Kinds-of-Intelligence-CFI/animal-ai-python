@@ -1,4 +1,6 @@
 
+import numpy as np
+
 from animalai.LLM_scaffolds.environment_scaffolds import EnvironmentScaffold
 
 try:
@@ -20,7 +22,7 @@ except ImportError as e:
 class KaggleWrapper(actors.Actor):
     """Actor that drives the Animal-AI environment."""
 
-    def __init__(self, environment_scaffold: EnvironmentScaffold):
+    def __init__(self, environment_scaffold: EnvironmentScaffold[np.ndarray]):
         super().__init__(name="AnimalAI", role="user", avatar="🐾")
         self.game_wrapper = environment_scaffold
 
