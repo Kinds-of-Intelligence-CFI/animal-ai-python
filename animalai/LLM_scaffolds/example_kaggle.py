@@ -1,16 +1,21 @@
 from kaggle_benchmarks.actors.llms import LLMChat, LLMResponse
 
 from animalai.LLM_scaffolds.environment_scaffolds import FrameByFrameScaffold
-from animalai.LLM_scaffolds.framework_wrappers import KaggleWrapper
+from animalai.LLM_scaffolds.kaggle_wrapper import KaggleWrapper
 from animalai.environment import AnimalAIEnvironment
 
-
-from kaggle_benchmarks import (
-    assertions,
-    chats,
-    llm,
-    task,
-)
+try:
+    from kaggle_benchmarks import (
+        assertions,
+        chats,
+        llm,
+        task,
+    )
+except ImportError as e:
+    raise ImportError(
+        "KaggleWrapper requires the 'kaggle-benchmarks' package. "
+        "Install it with: pip install animalai[kaggle]"
+    ) from e
 
 
 @task(name="Can it play Animal-AI?")
