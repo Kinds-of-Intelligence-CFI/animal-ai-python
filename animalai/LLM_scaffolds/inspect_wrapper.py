@@ -126,3 +126,9 @@ def total_reward_scorer() -> Scorer:
     async def score(state: TaskState, target: Target) -> Score:
         return Score(value=sum(state.metadata.get("rewards", [])))
     return score
+
+
+async def close_environment(state: TaskState, instance: str | None = None):
+    AAI_state = store_as(AAIStateModel, instance=instance)
+    if AAI_state.AAI is not None:
+        AAI_state.AAI.close()
