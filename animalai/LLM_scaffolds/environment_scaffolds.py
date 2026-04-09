@@ -64,27 +64,26 @@ ACTION_MAP = {
 AVAILABLE_ACTIONS = list(ACTION_MAP.keys())
 
 START_PROMPT = """
-You will be controlling an agent in the Animal-AI environment.
-Your goal is to navigate toward GREEN spheres (positive reward)
-and avoid RED spheres (negative reward).
+You are a PLAYER in a game set in a square arena with a white fence. Your task is to collect all the rewards as quickly and efficiently as possible. The rewards are green and yellow balls.
 
-Available actions: {actions}
+To successfully collect a reward, you must fully pass through it.
 
-You can select exactly one action per turn.
+The game ends when you have collected all the rewards and the arena closes. If you are still in the arena, the game is NOT finished and you have NOT collected all the rewards.
 
-Think step by step before making a decision.
+NOTE: When you collect a reward, your remaining health will INCREASE compared to the previous timestep. If it doesn't increase, the reward was not collected. Always compare your current health with the previous timestep to confirm this.\n\n
 
-The GREEN goal gives you a positive reward.  Move TOWARD it.
-The RED goal gives you a negative reward.  AVOID it.
+Be mindful of obstacles:
 
-If the green sphere is on your left, TURN_LEFT first, then go FORWARD.
-If the green sphere is on your right, TURN_RIGHT first, then go FORWARD.
+Red lava puddles and red balls: If you run into them, you will die.
+Holes: Some may contain rewards, but if you fall into an empty hole, you will be trapped and unable to collect other rewards.
+Blue paths: These are slightly raised paths. You can walk on them, but once you step off, you won't be able to get back onto them.
+Purple ramps: You can climb them to get to the other side. Once you climb over the ramp, you cannot climb back over the same ramp.
+Transparent walls: You can see through them, but you cannot walk through them.
+Pushable grey blocks: These are cube-like structures, patterned with dark grey rectangles on each face. If viewed from one side, they will look like a rectangular structure. They can be pushed, but they are heavy! To move these blocks, you need to run into them.
+Immovable objects: Walls and arches cannot be moved.\n
 
-Do not just keep turning in circles — go FORWARD when the goal
-is roughly centred in your view.
-
-Analyse the effects of each move.  After thinking, select a single
-action and display its full name.
+Available actions:
+{actions}
 """
 
 def _process_obs(obs: np.ndarray) -> np.ndarray:
