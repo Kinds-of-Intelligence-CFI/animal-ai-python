@@ -106,8 +106,10 @@ class FrameByFrameScaffold(EnvironmentScaffold[np.ndarray]):
     def get_default_system_prompt() -> str:
         return START_PROMPT.format(actions=AVAILABLE_ACTIONS)
 
-    def __init__(self, env: AnimalAIEnvironment):
+    def __init__(self, env: AnimalAIEnvironment, skipframe: int = 1):
         super().__init__(env)
+        assert skipframe >= 1, "skipframe must be at least 1"
+        self.skipframe = skipframe
         self.last_frame: np.ndarray = np.array([])
         self._total_steps = 0
         self._total_reward = 0.0
@@ -130,14 +132,14 @@ class FrameByFrameScaffold(EnvironmentScaffold[np.ndarray]):
     def available_actions(self) -> list[str]:
         return AVAILABLE_ACTIONS
 
-    def step(self, action: str, skipframe: int = 3) -> tuple[np.ndarray, float, bool, dict]:
-        if isinstance(action, str):
-            branch0, branch1 = ACTION_MAP[action]
-        else:
-            branch0, branch1 = action
-    
+    @property
+    def total_reward(self) -> float:
+        return self._total_reward
+
+    def step(self, action: str) -> tuple[np.ndarray, float, bool, dict]:
+        branch0, branch1 = ACTION_MAP[action]
         reward = 0.0
-        for _ in range(skipframe):
+        for _ in range(self.skipframe):
             if self._done:
                 break
             decision_steps, _ = self.env.get_steps(self.behavior_name)
