@@ -1,6 +1,3 @@
-
-
-
 from abc import ABC, abstractmethod
 
 import numpy as np
@@ -12,7 +9,7 @@ from mlagents_envs.base_env import ActionTuple
 
 
 class EnvironmentScaffold[ObsType](ABC):
-    """Abstract base class for environment scaffolds which handle turning actions from an llm (whatever the harness) into actions in AAI and return some results."""
+    """Abstract base class for environment scaffolds which handle converting actions from an llm (whatever the harness) into actions in AAI and return some results."""
     def __init__(self, env: AnimalAIEnvironment):
         self.env = env
 
@@ -35,10 +32,11 @@ class EnvironmentScaffold[ObsType](ABC):
         self.env.close()
 
     @property
+    @abstractmethod
     def available_actions(self) -> list[str]:
         """Returns a list of available actions that the LLM can choose from."""
         raise NotImplementedError
-    
+
     @staticmethod
     @abstractmethod
     def get_default_system_prompt() -> str:
@@ -46,6 +44,7 @@ class EnvironmentScaffold[ObsType](ABC):
         raise NotImplementedError
 
     @property
+    @abstractmethod
     def total_reward(self) -> float:
         """Returns the total reward accumulated so far."""
         raise NotImplementedError
@@ -111,7 +110,7 @@ class FrameByFrameScaffold(EnvironmentScaffold[np.ndarray]):
     def __init__(self, env: AnimalAIEnvironment):
         super().__init__(env)
         self.last_frame: np.ndarray = np.array([])
-        self.total_steps = 0
+        self._total_steps = 0
         self._total_reward = 0.0
         self._done = False
 
@@ -163,12 +162,12 @@ class FrameByFrameScaffold(EnvironmentScaffold[np.ndarray]):
                 self.last_frame = obs
     
         self._total_reward += reward
-        self.total_steps += 1
+        self._total_steps += 1
         return self.last_frame, reward, self._done, {}
     
     def reset(self) -> tuple[np.ndarray, dict]:
         self.last_frame = np.array([])
-        self.total_steps = 0
+        self._total_steps = 0
         self._total_reward = 0.0
         self._done = False
         self._collect_obs()
@@ -178,7 +177,7 @@ class FrameByFrameScaffold(EnvironmentScaffold[np.ndarray]):
         return self._done
 
     def get_results(self) -> dict:
-        return {"num_steps": self.total_steps, "total_reward": self._total_reward}
+        return {"num_steps": self._total_steps, "total_reward": self._total_reward}
 
 
 
