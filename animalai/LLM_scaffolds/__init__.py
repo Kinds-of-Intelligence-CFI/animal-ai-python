@@ -1,6 +1,14 @@
+import warnings
+
 from animalai.LLM_scaffolds.environment_scaffolds import EnvironmentScaffold, FrameByFrameScaffold
 
 __all__ = ["EnvironmentScaffold", "FrameByFrameScaffold", "KaggleWrapper", "act", "total_reward_scorer", "add_act_tool", "close_environment"]
+
+warnings.warn(
+    "The 'animalai.LLM_scaffolds' module is still in early development and may receive breaking changes. Use with caution and pin your version of 'animalai' to avoid unexpected issues.",
+    FutureWarning,
+    stacklevel=2,
+)
 
 def __getattr__(name):
     if name == "KaggleWrapper":
