@@ -171,6 +171,7 @@ class FrameByFrameScaffold(EnvironmentScaffold[np.ndarray]):
         self._total_steps = 0
         self._total_reward = 0.0
         self._done = False
+        self.env.reset()
         self._collect_obs()
         return self.last_frame, {}
 
