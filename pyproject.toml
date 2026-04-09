@@ -31,6 +31,12 @@ dependencies = [
     "tqdm>=4.67.3",
 ]
 
+[project.optional-dependencies]
+kaggle = ["kaggle-benchmarks>=0.3.0"]
+inspect-ai = [
+    "inspect-ai>=0.3.205",
+]
+
 [project.urls]
 "Website"         = "https://animalai.org/"
 "Repository"      = "https://github.com/Kinds-of-Intelligence-CFI/animal-ai-python"
@@ -48,3 +54,4 @@ build-backend = "hatchling.build"
 [tool.rye]
 managed          = true
 dev-dependencies = []
+                               
