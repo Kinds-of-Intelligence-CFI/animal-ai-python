@@ -48,6 +48,14 @@ class AAIStateModel(StoreModel):
     AAI : Optional[EnvironmentScaffold] = None
     rewards: list[float] = []
 
+def parse_action(game_wrapper: EnvironmentScaffold, response: str) -> str:
+    actions = game_wrapper.available_actions
+    for word in response.split()[::-1]:
+        cleaned = word.strip(".,!?;:'\"()[]{}")
+        if cleaned in actions:
+            return cleaned
+    raise ValueError(f"Could not parse action from '{response.strip()}'")
+
 @tool()
 def act(scaffold_type: type[EnvironmentScaffold], state: TaskState, instance: str | None = None) -> Tool:
     """
@@ -82,7 +90,12 @@ def act(scaffold_type: type[EnvironmentScaffold], state: TaskState, instance: st
                 targetFrameRate=state.metadata.get("targetFrameRate", -1),
             ))
 
-        obs, reward, done, info = AAI_state.AAI.step(action)
+        clean_action = parse_action(AAI_state.AAI, action)
+        try:
+            obs, reward, done, info = AAI_state.AAI.step(clean_action)
+        except Exception:
+            AAI_state.AAI.close()
+            raise
         AAI_state.rewards.append(reward)
         if done:
             state.metadata["rewards"] = AAI_state.rewards

@@ -27,10 +27,11 @@ class KaggleWrapper(actors.Actor):
         self.game_wrapper = environment_scaffold
 
     def parse_action(self, response: str) -> str:
+        actions = self.game_wrapper.available_actions
         for word in response.split()[::-1]:
-            for action in self.game_wrapper.available_actions:
-                if action in word:
-                    return action
+            cleaned = word.strip(".,!?;:'\"()[]{}")
+            if cleaned in actions:
+                return cleaned
         raise ValueError(f"Could not parse action from '{response.strip()}'")
 
     def initialize(self, start_prompt: str | None = None):
