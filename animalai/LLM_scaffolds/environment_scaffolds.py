@@ -1,14 +1,15 @@
 from abc import ABC, abstractmethod
+from typing import Generic, TypeVar
 
 import numpy as np
 
 from animalai.environment import AnimalAIEnvironment
 from mlagents_envs.base_env import ActionTuple
 
+ObsType = TypeVar("ObsType")
 
 
-
-class EnvironmentScaffold[ObsType](ABC):
+class EnvironmentScaffold(ABC, Generic[ObsType]):
     """Abstract base class for environment scaffolds which handle converting actions from an llm (whatever the harness) into actions in AAI and return some results."""
     def __init__(self, env: AnimalAIEnvironment):
         self.env = env
