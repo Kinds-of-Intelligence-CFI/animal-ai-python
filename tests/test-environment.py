@@ -1,3 +1,4 @@
+import random
 import unittest
 from unittest.mock import patch
 from animalai.environment import AnimalAIEnvironment
@@ -25,6 +26,40 @@ class TestEnvironmentInitialization(unittest.TestCase):
         )  # For custom file path, use full path.
         mock_env.assert_called_once()
         self.assertIsNotNone(env)
+
+    @patch("animalai.environment.UnityEnvironment.__init__")
+    @patch("animalai.environment.UnityEnvironment.reset")
+    def test_timeout_default_train(self, mock_reset, mock_unity_init):
+        """Test if the default timeout is set correctly in train mode."""
+        mock_unity_init.return_value = None
+        mock_reset.return_value = None
+        env = AnimalAIEnvironment(play=False)
+        self.assertEqual(env.timeout, 60)
+
+    @patch("animalai.environment.UnityEnvironment.__init__")
+    @patch("animalai.environment.UnityEnvironment.reset")
+    def test_timeout_default_play(self, mock_reset, mock_unity_init):
+        """Test if the default timeout is set correctly in play mode."""
+        mock_unity_init.return_value = None
+        mock_reset.return_value = None
+        env = AnimalAIEnvironment(play=True)
+        self.assertEqual(env.timeout, 10)
+            
+    @patch("animalai.environment.UnityEnvironment.__init__")
+    @patch("animalai.environment.UnityEnvironment.reset")
+    def test_timeout_custom(self, mock_reset, mock_unity_init):
+        """Test if the custom timeout is set correctly when a custom value is provided."""
+        mock_unity_init.return_value = None
+        mock_reset.return_value = None
+        env = AnimalAIEnvironment(timeout=45)
+        self.assertEqual(env.timeout, 45)
+
+    @patch("animalai.environment.UnityEnvironment.__init__")
+    def test_timeout_invalid(self, mock_unity_init):
+        """Test if the invalid timeout raises a ValueError."""
+        mock_unity_init.return_value = None
+        with self.assertRaises(AssertionError):
+            AnimalAIEnvironment(timeout=-1)
 
 
 class TestSideChannelsConfiguration(unittest.TestCase):
