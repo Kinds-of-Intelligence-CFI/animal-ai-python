@@ -1,5 +1,7 @@
 """Download and cache Animal-AI Unity binaries from GitHub Releases."""
 
+import ctypes
+import ctypes.wintypes
 import hashlib
 import os
 import shutil
@@ -166,6 +168,27 @@ def extract_archive(archive_path: Path, dest_dir: Path) -> None:
                 item.chmod(item.stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
 
 
+def _is_process_alive(pid: int) -> bool:
+    if sys.platform == "win32":
+        PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+        STILL_ACTIVE = 259
+        handle = ctypes.windll.kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
+        if not handle:
+            return False
+        exit_code = ctypes.wintypes.DWORD()
+        ctypes.windll.kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code))
+        ctypes.windll.kernel32.CloseHandle(handle)
+        return exit_code.value == STILL_ACTIVE
+    else:
+        try:
+            os.kill(pid, 0)
+            return True
+        except ProcessLookupError:
+            return False
+        except PermissionError:
+            return False
+
+
 @contextmanager
 def _download_lock(version_dir: Path):
     """Simple PID-based lockfile to prevent concurrent downloads."""
@@ -174,15 +197,13 @@ def _download_lock(version_dir: Path):
 
     # Check for stale lock
     if lock_path.exists():
-        try:
-            pid = int(lock_path.read_text().strip())
-            os.kill(pid, 0)  # Check if process is alive
+        pid = int(lock_path.read_text().strip())
+        if _is_process_alive(pid):
             raise DownloadError(
                 f"Another download is in progress (PID {pid}). "
                 f"If this is wrong, delete {lock_path}"
             )
-        except (ValueError, ProcessLookupError, PermissionError):
-            lock_path.unlink(missing_ok=True)
+        lock_path.unlink(missing_ok=True)
 
     lock_path.write_text(str(os.getpid()))
     try:

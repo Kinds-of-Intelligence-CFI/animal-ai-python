@@ -369,10 +369,33 @@ class TestLockFile(unittest.TestCase):
 
             self.assertFalse(lock_path.exists())
 
-    def test_stale_lock_removed(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            from animalai.download import _download_lock
+    @unittest.skipUnless(sys.platform == "win32", "Windows-specific PID check")
+    def test_stale_lock_removed_windows(self):
+        import ctypes
+        from animalai.download import _download_lock
 
+        # Find a PID that doesn't exist on Windows by opening and checking handles
+        dead_pid = 999999999
+        PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+        handle = ctypes.windll.kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, dead_pid)
+        self.assertEqual(handle, 0, "Expected PID 999999999 to not exist on this system")
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            version_dir = Path(tmpdir) / "6.0.0"
+            version_dir.mkdir()
+
+            lock_path = version_dir / ".download_lock"
+            lock_path.write_text(str(dead_pid))
+
+            with _download_lock(version_dir):
+                self.assertTrue(lock_path.exists())
+                self.assertEqual(lock_path.read_text().strip(), str(os.getpid()))
+
+    @unittest.skipIf(sys.platform == "win32", "POSIX-specific PID check")
+    def test_stale_lock_removed_posix(self):
+        from animalai.download import _download_lock
+
+        with tempfile.TemporaryDirectory() as tmpdir:
             version_dir = Path(tmpdir) / "6.0.0"
             version_dir.mkdir()
 
