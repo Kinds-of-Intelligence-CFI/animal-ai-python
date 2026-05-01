@@ -52,6 +52,11 @@ class EnvironmentScaffold(ABC, Generic[ObsType]):
     
 
 
+DEFAULT_LAST_FRAME: np.ndarray = np.array([])
+DEFAULT_TOTAL_STEPS: int = 0
+DEFAULT_TOTAL_REWARD: float = 0.0
+DEFAULT_DONE: bool = False
+
 ACTION_MAP = {
     "NOOP":          (0, 0),
     "FORWARD":       (1, 0),
@@ -111,10 +116,10 @@ class FrameByFrameScaffold(EnvironmentScaffold[np.ndarray]):
         super().__init__(env)
         assert skipframe >= 1, "skipframe must be at least 1"
         self.skipframe = skipframe
-        self.last_frame: np.ndarray = np.array([])
-        self._total_steps = 0
-        self._total_reward = 0.0
-        self._done = False
+        self.last_frame: np.ndarray = DEFAULT_LAST_FRAME
+        self._total_steps = DEFAULT_TOTAL_STEPS
+        self._total_reward = DEFAULT_TOTAL_REWARD
+        self._done = DEFAULT_DONE
 
         self.behavior_name = list(self.env.behavior_specs.keys())[0]
         self._collect_obs()
@@ -168,10 +173,10 @@ class FrameByFrameScaffold(EnvironmentScaffold[np.ndarray]):
         return self.last_frame, reward, self._done, {}
     
     def reset(self) -> tuple[np.ndarray, dict]:
-        self.last_frame = np.array([])
-        self._total_steps = 0
-        self._total_reward = 0.0
-        self._done = False
+        self.last_frame = DEFAULT_LAST_FRAME
+        self._total_steps = DEFAULT_TOTAL_STEPS
+        self._total_reward = DEFAULT_TOTAL_REWARD
+        self._done = DEFAULT_DONE
         self.env.reset()
         self._collect_obs()
         return self.last_frame, {}
