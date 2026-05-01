@@ -212,7 +212,7 @@ def find_cached_executable(ver: str | None = None) -> Path | None:
         return None
 
     # Search using same patterns as find_executable
-    for bin_name in ["AAI", "AnimalAI", "animalAI", "Animal-AI", "MacOS"]:
+    for bin_name in ["AAI", "animalAI", "AnimalAI", "Animal-AI", "MacOS"]:
         for ext in ["x86_64", "exe", "app"]:
             matches = list(platform_dir.glob(f"{bin_name}.{ext}"))
             if matches:
