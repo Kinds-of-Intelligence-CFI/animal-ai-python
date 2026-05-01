@@ -3,6 +3,7 @@
 import hashlib
 import io
 import os
+import sys
 import tempfile
 import unittest
 import zipfile
@@ -174,6 +175,7 @@ class TestExtractArchive(unittest.TestCase):
                 (dest / "animalAI.x86_64").read_bytes(), b"fake binary"
             )
 
+    @unittest.skipUnless(sys.platform == "linux", "chmod has no effect on Windows/macOS")
     @patch("animalai.download.sys")
     def test_sets_executable_permissions_on_linux(self, mock_sys):
         mock_sys.platform = "linux"
