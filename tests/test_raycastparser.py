@@ -101,12 +101,12 @@ class TestRayCastParser(unittest.TestCase):
             "GOODGOALMULTI : [0.  0.5 0.  0.  0.  0.  0. ]\n")
         # fmt: on
 
-    def test_MIX_PILLARBUTTON(self):
+    def test_MIX_SPAWNERBUTTON(self):
         """
-        Check if the parser correctly identifies some objects including PILLARBUTTON while ignoring others.
+        Check if the parser correctly identifies some objects including SPAWNERBUTTON while ignoring others.
         """
         parser = RayCastParser(
-            [RayCastObjects.ARENA, RayCastObjects.PILLARBUTTON, RayCastObjects.MOVABLE],
+            [RayCastObjects.ARENA, RayCastObjects.SPAWNERBUTTON, RayCastObjects.MOVABLE],
             7,
         )
         # fmt: off
@@ -130,6 +130,6 @@ class TestRayCastParser(unittest.TestCase):
 
         self.assertEqual(pp_out.getvalue(),
             "ARENA : [0.  0.  0.  0.1 0.  0.  0. ]\n" +
-            "PILLARBUTTON : [0.3 0.5 0.  0.1 0.6 0.4 0.2]\n" + 
+            "SPAWNERBUTTON : [0.3 0.5 0.  0.1 0.6 0.4 0.2]\n" +
             "MOVABLE : [0.3 0.  0.  0.  0.  0.  0. ]\n")
         # fmt: on
