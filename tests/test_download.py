@@ -324,34 +324,34 @@ class TestVerifyChecksum(unittest.TestCase):
         digest = hashlib.sha256(data).hexdigest()
         with tempfile.NamedTemporaryFile(delete=False) as f:
             f.write(data)
-            f.flush()
-            try:
-                verify_checksum(Path(f.name), f"sha256:{digest}")
-            finally:
-                os.unlink(f.name)
+            fname = f.name
+        try:
+            verify_checksum(Path(fname), f"sha256:{digest}")
+        finally:
+            os.unlink(fname)
 
     def test_mismatched_checksum_raises(self):
         data = b"hello world"
         with tempfile.NamedTemporaryFile(delete=False) as f:
             f.write(data)
-            f.flush()
-            try:
-                with self.assertRaises(DownloadError) as ctx:
-                    verify_checksum(Path(f.name), "sha256:0000dead")
-                self.assertIn("Checksum mismatch", str(ctx.exception))
-            finally:
-                os.unlink(f.name)
+            fname = f.name
+        try:
+            with self.assertRaises(DownloadError) as ctx:
+                verify_checksum(Path(fname), "sha256:0000dead")
+            self.assertIn("Checksum mismatch", str(ctx.exception))
+        finally:
+            os.unlink(fname)
 
     def test_invalid_format_raises(self):
         with tempfile.NamedTemporaryFile(delete=False) as f:
             f.write(b"data")
-            f.flush()
-            try:
-                with self.assertRaises(DownloadError) as ctx:
-                    verify_checksum(Path(f.name), "nocolon")
-                self.assertIn("Invalid checksum format", str(ctx.exception))
-            finally:
-                os.unlink(f.name)
+            fname = f.name
+        try:
+            with self.assertRaises(DownloadError) as ctx:
+                verify_checksum(Path(fname), "nocolon")
+            self.assertIn("Invalid checksum format", str(ctx.exception))
+        finally:
+            os.unlink(fname)
 
 
 class TestLockFile(unittest.TestCase):
