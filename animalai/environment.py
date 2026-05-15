@@ -1,5 +1,6 @@
 from pathlib import Path
 import uuid
+import os
 from typing import NamedTuple, Dict, Optional, List
 from mlagents_envs.environment import UnityEnvironment
 from mlagents_envs.rpc_communicator import UnityTimeOutException
@@ -230,13 +231,17 @@ class AnimalAIEnvironment(UnityEnvironment):
 
     def reset(self, arenas_configurations="") -> None:
         if arenas_configurations != "":
-            f = open(arenas_configurations, "r")
-            d = f.read()
-            f.close()
+            if os.path.exists(arenas_configurations):
+                absolute_path = os.path.abspath(arenas_configurations)
+            else:
+                raise FileNotFoundError(
+                    f"File {arenas_configurations} does not exist. "
+                    "Please provide a valid path to the arenas configuration file."
+                )
             side_channel = self.arenas_parameters_side_channel
             if side_channel is None:
                 raise RuntimeError("Arenas parameters side channel not found. ")
-            side_channel.send_raw_data(bytearray(d, encoding="utf-8"))
+            side_channel.send_raw_data(bytearray(absolute_path, encoding="utf-8"))
         try:
             super().reset()
         except UnityTimeOutException as timeoutException:
