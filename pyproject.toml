@@ -1,6 +1,6 @@
 [project]
 name = "animalai"
-version = "5.0.1"
+version = "6.1.1"
 description = "Animal-AI Python API"
 license = "MIT"
 readme = "README.md"
@@ -18,26 +18,34 @@ classifiers = [
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
-    "License :: OSI Approved :: Apache Software License",
-    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.14",
     "Operating System :: Microsoft :: Windows :: Windows 10",
     "Operating System :: Microsoft :: Windows :: Windows 11",
     "Operating System :: MacOS :: MacOS X",
     "Operating System :: POSIX :: Linux",
 ]
-requires-python = ">=3.10.12, <3.10.13"
+requires-python = ">=3.14"
 dependencies = [
-    "mlagents_envs>=1.0.0",
+    "mlagents-envs-aai>=1.0.0",
     "numpy",
-    "protobuf==3.20.3",
+    "tqdm>=4.67.3",
+]
+
+[project.optional-dependencies]
+kaggle = ["kaggle-benchmarks>=0.3.0"]
+inspect-ai = [
+    "inspect-ai>=0.3.205",
 ]
 
 [project.urls]
 "Website"         = "https://animalai.org/"
 "Repository"      = "https://github.com/Kinds-of-Intelligence-CFI/animal-ai-python"
 "Main Repository" = "https://github.com/Kinds-of-Intelligence-CFI/animal-ai"
-"Releases"        = "https://https://github.com/Kinds-of-Intelligence-CFI/animal-ai/releases"
+"Releases"        = "https://github.com/Kinds-of-Intelligence-CFI/animal-ai/releases"
 "Documentation"   = "https://github.com/Kinds-of-Intelligence-CFI/animal-ai/tree/main/docs"
+
+[project.scripts]
+animalai = "animalai.__main__:main"
 
 [build-system]
 requires      = ["hatchling"]
@@ -46,6 +54,4 @@ build-backend = "hatchling.build"
 [tool.rye]
 managed          = true
 dev-dependencies = []
-
-[tool.hatch.metadata]
-allow-direct-references = true
+                               
