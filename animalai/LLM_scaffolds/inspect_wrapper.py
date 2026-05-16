@@ -81,7 +81,7 @@ def act(scaffold_type: type[EnvironmentScaffold], state: TaskState, instance: st
             AAI_state.AAI = scaffold_type(AnimalAIEnvironment(
                 arenas_configurations=state.metadata["arenas_configurations"],
                 useCamera=state.metadata.get("useCamera", True),
-                no_graphics=state.metadata.get("no_graphics", True),
+                no_graphics=state.metadata.get("no_graphics", False),
                 resolution=state.metadata.get("resolution", 84),
                 base_port=state.metadata.get("base_port", 5005),
                 worker_id=state.metadata.get("worker_id", 0),
