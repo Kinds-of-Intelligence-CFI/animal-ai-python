@@ -32,7 +32,6 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-kaggle = ["kaggle-benchmarks>=0.3.0"]
 inspect-ai = [
     "inspect-ai>=0.3.205",
 ]
