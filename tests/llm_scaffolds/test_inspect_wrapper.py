@@ -7,6 +7,8 @@ from PIL import Image
 
 from animalai.LLM_scaffolds.inspect_wrapper import (
     ContentImage,
+    TERMINATION_ERROR,
+    TERMINATION_INSPECT_LIMIT,
     encode_camera_obs,
     parse_action,
     act,
@@ -14,7 +16,12 @@ from animalai.LLM_scaffolds.inspect_wrapper import (
     total_reward_scorer,
     close_environment,
 )
-from animalai.LLM_scaffolds.environment_scaffolds import EnvironmentScaffold
+from animalai.LLM_scaffolds.environment_scaffolds import (
+    DONE_REASON_TERMINAL,
+    DONE_REASON_TIMEOUT,
+    EnvironmentScaffold,
+    FrameByFrameScaffold,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -46,16 +53,19 @@ def _make_aai_state(scaffold=None):
     aai_state = MagicMock()
     aai_state.AAI = scaffold   # None triggers env creation; a scaffold bypasses it
     aai_state.rewards = []
+    aai_state.termination_reason = None
     return aai_state
 
 
-def _make_scaffold(obs=None, reward: float = 1.0, done: bool = False):
+def _make_scaffold(obs=None, reward: float = 1.0, done: bool = False, done_reason=None):
     """Mock EnvironmentScaffold. obs should be HWC uint8, matching _process_obs output."""
     scaffold = MagicMock(spec=EnvironmentScaffold)
     scaffold.available_actions = _ALL_ACTIONS
     if obs is None:
         obs = np.zeros((4, 4, 3), dtype=np.uint8)
-    scaffold.step.return_value = (obs, reward, done, {})
+    # The scaffold only fills `info` with a done_reason when the episode ends.
+    info = {"done_reason": done_reason} if done else {}
+    scaffold.step.return_value = (obs, reward, done, info)
     return scaffold
 
 
@@ -215,6 +225,16 @@ class TestAct(unittest.IsolatedAsyncioTestCase):
                 await self._invoke(MagicMock(), _make_state())
             mock_scaffold.close.assert_called_once()
 
+    async def test_step_failure_records_error_termination_reason(self):
+        mock_scaffold = _make_scaffold()
+        mock_scaffold.step.side_effect = RuntimeError("env crashed")
+        aai_state = _make_aai_state(scaffold=mock_scaffold)
+
+        with patch("animalai.LLM_scaffolds.inspect_wrapper.store_as", return_value=aai_state):
+            with self.assertRaises(RuntimeError):
+                await self._invoke(MagicMock(), _make_state())
+        self.assertEqual(aai_state.termination_reason, TERMINATION_ERROR)
+
     # ------------------------------------------------------------------
     # Reward accumulation
     # ------------------------------------------------------------------
@@ -228,18 +248,16 @@ class TestAct(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(aai_state.rewards, [3.5])
 
     # ------------------------------------------------------------------
-    # Done — three consequences
+    # Done — consequences
     # ------------------------------------------------------------------
 
-    async def test_done_copies_rewards_to_state_metadata(self):
-        mock_scaffold = _make_scaffold(reward=2.0, done=True)
-        state = _make_state()
+    async def test_done_records_termination_reason_from_info(self):
+        mock_scaffold = _make_scaffold(done=True, done_reason=DONE_REASON_TERMINAL)
         aai_state = _make_aai_state(scaffold=mock_scaffold)
-        aai_state.rewards = [1.0]
 
         with patch("animalai.LLM_scaffolds.inspect_wrapper.store_as", return_value=aai_state):
-            await self._invoke(MagicMock(), state)
-        self.assertEqual(state.metadata["rewards"], [1.0, 2.0])
+            await self._invoke(MagicMock(), _make_state())
+        self.assertEqual(aai_state.termination_reason, DONE_REASON_TERMINAL)
 
     async def test_done_sets_state_completed(self):
         mock_scaffold = _make_scaffold(done=True)
@@ -308,17 +326,43 @@ class TestAddActTool(unittest.IsolatedAsyncioTestCase):
 # ---------------------------------------------------------------------------
 
 class TestTotalRewardScorer(unittest.IsolatedAsyncioTestCase):
-    async def test_sums_rewards_from_metadata(self):
+    async def test_sums_rewards_from_store(self):
+        aai_state = _make_aai_state()
+        aai_state.rewards = [1.0, 2.0, 3.5]
         scorer_fn = total_reward_scorer()
-        state = _make_state(metadata={"rewards": [1.0, 2.0, 3.5]})
-        score = await scorer_fn(state=state, target=MagicMock())
+        with patch("animalai.LLM_scaffolds.inspect_wrapper.store_as", return_value=aai_state):
+            score = await scorer_fn(state=_make_state(), target=MagicMock())
         self.assertAlmostEqual(score.value, 6.5)
 
-    async def test_returns_zero_when_no_rewards_key_in_metadata(self):
+    async def test_returns_zero_when_no_rewards_in_store(self):
+        aai_state = _make_aai_state()  # rewards == []
         scorer_fn = total_reward_scorer()
-        state = _make_state(metadata={})
-        score = await scorer_fn(state=state, target=MagicMock())
+        with patch("animalai.LLM_scaffolds.inspect_wrapper.store_as", return_value=aai_state):
+            score = await scorer_fn(state=_make_state(), target=MagicMock())
         self.assertAlmostEqual(score.value, 0.0)
+
+    async def test_scores_rewards_even_when_episode_not_done(self):
+        # Regression: an episode stopped by an Inspect limit never hits the
+        # `done` branch, but its accumulated reward must still be scored, and
+        # the missing env reason falls back to the harness limit.
+        aai_state = _make_aai_state()
+        aai_state.rewards = [-0.1, -0.1, -0.1]
+        aai_state.termination_reason = None  # env never reported done
+        scorer_fn = total_reward_scorer()
+        with patch("animalai.LLM_scaffolds.inspect_wrapper.store_as", return_value=aai_state):
+            score = await scorer_fn(state=_make_state(), target=MagicMock())
+        self.assertAlmostEqual(score.value, -0.3)
+        self.assertEqual(score.metadata["termination_reason"], TERMINATION_INSPECT_LIMIT)
+
+    async def test_includes_termination_reason_and_step_count_in_metadata(self):
+        aai_state = _make_aai_state()
+        aai_state.rewards = [1.0, 2.0]
+        aai_state.termination_reason = DONE_REASON_TERMINAL
+        scorer_fn = total_reward_scorer()
+        with patch("animalai.LLM_scaffolds.inspect_wrapper.store_as", return_value=aai_state):
+            score = await scorer_fn(state=_make_state(), target=MagicMock())
+        self.assertEqual(score.metadata["termination_reason"], DONE_REASON_TERMINAL)
+        self.assertEqual(score.metadata["num_steps"], 2)
 
 
 # ---------------------------------------------------------------------------
@@ -330,14 +374,86 @@ class TestCloseEnvironment(unittest.IsolatedAsyncioTestCase):
         mock_scaffold = MagicMock()
         aai_state = _make_aai_state(scaffold=mock_scaffold)
 
-        with patch("animalai.LLM_scaffolds.inspect_wrapper.store_as", return_value=aai_state):
-            await close_environment(MagicMock(), instance="test")
+        with patch("animalai.LLM_scaffolds.inspect_wrapper.store_as", return_value=aai_state), \
+             patch("animalai.LLM_scaffolds.inspect_wrapper.transcript"):
+            await close_environment(_make_state(), instance="test")
         mock_scaffold.close.assert_called_once()
 
     async def test_does_nothing_when_no_env_in_store(self):
         aai_state = _make_aai_state()  # AAI=None
-        with patch("animalai.LLM_scaffolds.inspect_wrapper.store_as", return_value=aai_state):
-            await close_environment(MagicMock(), instance="test")  # must not raise
+        with patch("animalai.LLM_scaffolds.inspect_wrapper.store_as", return_value=aai_state), \
+             patch("animalai.LLM_scaffolds.inspect_wrapper.transcript") as mock_transcript:
+            await close_environment(_make_state(), instance="test")  # must not raise
+        mock_transcript.assert_not_called()
+
+    async def test_records_env_termination_reason_in_metadata(self):
+        aai_state = _make_aai_state(scaffold=MagicMock())
+        aai_state.rewards = [1.0, 2.0]
+        aai_state.termination_reason = DONE_REASON_TERMINAL
+        state = _make_state(metadata={})
+
+        with patch("animalai.LLM_scaffolds.inspect_wrapper.store_as", return_value=aai_state), \
+             patch("animalai.LLM_scaffolds.inspect_wrapper.transcript"):
+            await close_environment(state, instance="test")
+
+        outcome = state.metadata["episode_outcome"]
+        self.assertEqual(outcome["termination_reason"], DONE_REASON_TERMINAL)
+        self.assertAlmostEqual(outcome["total_reward"], 3.0)
+        self.assertEqual(outcome["num_steps"], 2)
+
+    async def test_defaults_to_inspect_limit_when_no_env_reason(self):
+        # Env never reported done (e.g. message limit) -> generic harness reason.
+        aai_state = _make_aai_state(scaffold=MagicMock())
+        aai_state.rewards = [-0.1, -0.1]
+        aai_state.termination_reason = None
+        state = _make_state(metadata={})
+
+        with patch("animalai.LLM_scaffolds.inspect_wrapper.store_as", return_value=aai_state), \
+             patch("animalai.LLM_scaffolds.inspect_wrapper.transcript"):
+            await close_environment(state, instance="test")
+
+        self.assertEqual(
+            state.metadata["episode_outcome"]["termination_reason"],
+            TERMINATION_INSPECT_LIMIT,
+        )
+
+    async def test_emits_transcript_info_event(self):
+        aai_state = _make_aai_state(scaffold=MagicMock())
+        aai_state.rewards = [1.0]
+        aai_state.termination_reason = DONE_REASON_TIMEOUT
+        state = _make_state(metadata={})
+
+        with patch("animalai.LLM_scaffolds.inspect_wrapper.store_as", return_value=aai_state), \
+             patch("animalai.LLM_scaffolds.inspect_wrapper.transcript") as mock_transcript:
+            await close_environment(state, instance="test")
+
+        mock_transcript.return_value.info.assert_called_once()
+        _, kwargs = mock_transcript.return_value.info.call_args
+        self.assertEqual(kwargs.get("source"), "animalai")
+
+
+# ---------------------------------------------------------------------------
+# FrameByFrameScaffold._classify_terminal
+# ---------------------------------------------------------------------------
+
+class _FakeTerminalSteps:
+    """Minimal stand-in for ml-agents TerminalSteps (only the fields we read)."""
+    def __init__(self, interrupted: bool, reward: float):
+        self.interrupted = np.array([interrupted])
+        self.reward = np.array([reward], dtype=np.float32)
+
+
+class TestClassifyTerminal(unittest.TestCase):
+    def test_interrupted_is_env_timeout(self):
+        ts = _FakeTerminalSteps(interrupted=True, reward=1.0)
+        self.assertEqual(FrameByFrameScaffold._classify_terminal(ts), DONE_REASON_TIMEOUT)
+
+    def test_non_interrupted_is_terminal_regardless_of_reward(self):
+        # Reward sign is left for the caller to interpret, not classified here.
+        for reward in (2.5, 0.0, -1.0):
+            with self.subTest(reward=reward):
+                ts = _FakeTerminalSteps(interrupted=False, reward=reward)
+                self.assertEqual(FrameByFrameScaffold._classify_terminal(ts), DONE_REASON_TERMINAL)
 
 
 if __name__ == "__main__":

@@ -16,6 +16,7 @@ try:
     from inspect_ai.solver import Generate, Solver, TaskState, basic_agent, solver
     from inspect_ai.util import StoreModel, message_limit, store_as
     from inspect_ai.model import ChatMessageAssistant, ChatMessageUser, Content, ContentImage, ContentText
+    from inspect_ai.log import transcript
 except ImportError as e:
     raise ImportError(
         "inspect_wrapper requires the 'inspect-ai' package. "
@@ -27,6 +28,11 @@ import numpy as np
 
 from animalai.LLM_scaffolds.environment_scaffolds import EnvironmentScaffold
 from animalai.environment import AnimalAIEnvironment
+
+# Termination reasons from the harness rather than the env (whose reasons arrive
+# via the scaffold's `info["done_reason"]`).
+TERMINATION_ERROR = "error"                  # an exception was raised during step
+TERMINATION_INSPECT_LIMIT = "inspect_limit"  # Inspect stopped the sample (message/token/time limit)
 
 import io 
 import base64
@@ -42,6 +48,7 @@ def encode_camera_obs(obs: np.ndarray) -> str:
 class AAIStateModel(StoreModel):
     AAI : Optional[EnvironmentScaffold] = None
     rewards: list[float] = []
+    termination_reason: Optional[str] = None
 
 def parse_action(game_wrapper: EnvironmentScaffold, response: str) -> str:
     actions = game_wrapper.available_actions
@@ -95,11 +102,12 @@ def act(scaffold_type: type[EnvironmentScaffold], state: TaskState, instance: st
         try:
             obs, reward, done, info = AAI_state.AAI.step(clean_action)
         except Exception:
+            AAI_state.termination_reason = TERMINATION_ERROR
             AAI_state.AAI.close()
             raise
         AAI_state.rewards.append(reward)
         if done:
-            state.metadata["rewards"] = AAI_state.rewards
+            AAI_state.termination_reason = info.get("done_reason")
             state.completed = True
             AAI_state.AAI.close()
 
@@ -141,14 +149,45 @@ def add_act_tool(scaffold_type: type[EnvironmentScaffold]) -> Solver:
 
     return solve
 
+def _termination_reason(AAI_state: AAIStateModel) -> str:
+    """The episode's end reason. No env-side reason means the harness stopped it
+    (e.g. a message limit), which the `act` tool never gets to observe."""
+    return AAI_state.termination_reason or TERMINATION_INSPECT_LIMIT
+
+
 @scorer(metrics=[mean(), std()])
 def total_reward_scorer() -> Scorer:
     async def score(state: TaskState, target: Target) -> Score:
-        return Score(value=sum(state.metadata.get("rewards", [])))
+        # Read from the store, which is populated every step, so the reward
+        # survives even when an Inspect limit cuts the episode short.
+        AAI_state = store_as(AAIStateModel)
+        return Score(
+            value=sum(AAI_state.rewards),
+            metadata={
+                "termination_reason": _termination_reason(AAI_state),
+                "num_steps": len(AAI_state.rewards),
+            },
+        )
     return score
 
 
 async def close_environment(state: TaskState, instance: str | None = None):
+    """Task cleanup: record the episode outcome, then close the env.
+
+    Runs however the sample ended, so it is the reliable place to record why.
+    No env-side reason means the harness stopped the sample (e.g. a message
+    limit), which Inspect already logs as its own `sample_limit` event.
+    """
     AAI_state = store_as(AAIStateModel, instance=instance)
-    if AAI_state.AAI is not None:
-        AAI_state.AAI.close()
+    if AAI_state.AAI is None:
+        return
+
+    outcome = {
+        "termination_reason": _termination_reason(AAI_state),
+        "total_reward": sum(AAI_state.rewards),
+        "num_steps": len(AAI_state.rewards),
+    }
+    state.metadata["episode_outcome"] = outcome
+    # Surface the outcome in the viewer's Transcript tab, next to Inspect's events.
+    transcript().info(outcome, source="animalai")
+    AAI_state.AAI.close()

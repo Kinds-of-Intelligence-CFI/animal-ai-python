@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar
+from typing import Generic, Optional, TypeVar
 
 import numpy as np
 
@@ -60,6 +60,10 @@ DEFAULT_LAST_FRAME: np.ndarray = np.array([])
 DEFAULT_TOTAL_STEPS: int = 0
 DEFAULT_TOTAL_REWARD: float = 0.0
 DEFAULT_DONE: bool = False
+
+DONE_REASON_TERMINAL: str = "env_terminal"  # env ended the episode (reward, death, ...)
+DONE_REASON_TIMEOUT: str = "ml_agents_timeout"    # arena time budget (`t`) elapsed
+DONE_REASON_NO_AGENTS: str = "no_agents"    # no agent present to act on
 
 ACTION_MAP = {
     "NOOP":          (0, 0),
@@ -124,6 +128,7 @@ class FrameByFrameScaffold(EnvironmentScaffold[np.ndarray]):
         self._total_steps = DEFAULT_TOTAL_STEPS
         self._total_reward = DEFAULT_TOTAL_REWARD
         self._done = DEFAULT_DONE
+        self._done_reason: Optional[str] = None
 
         self.behavior_name = list(self.env.behavior_specs.keys())[0]
         self._collect_obs()
@@ -133,10 +138,17 @@ class FrameByFrameScaffold(EnvironmentScaffold[np.ndarray]):
         if len(terminal_steps) > 0:
             obs = _process_obs(terminal_steps.obs[0][0])
             self._done = True
+            self._done_reason = self._classify_terminal(terminal_steps)
         else:
             obs = _process_obs(decision_steps.obs[0][0])
         self.last_frame = obs
         return obs
+
+    @staticmethod
+    def _classify_terminal(terminal_steps) -> str:
+        if bool(terminal_steps.interrupted[0]):
+            return DONE_REASON_TIMEOUT
+        return DONE_REASON_TERMINAL
 
     @property
     def available_actions(self) -> list[str]:
@@ -145,6 +157,11 @@ class FrameByFrameScaffold(EnvironmentScaffold[np.ndarray]):
     @property
     def total_reward(self) -> float:
         return self._total_reward
+
+    @property
+    def done_reason(self) -> Optional[str]:
+        """Why the env reported `done`, or None while ongoing."""
+        return self._done_reason
 
     def step(self, action: str) -> tuple[np.ndarray, float, bool, dict]:
         branch0, branch1 = ACTION_MAP[action]
@@ -156,31 +173,41 @@ class FrameByFrameScaffold(EnvironmentScaffold[np.ndarray]):
             n_agents = len(decision_steps)
             if n_agents == 0:
                 self._done = True
+                self._done_reason = DONE_REASON_NO_AGENTS
                 break
             discrete = np.array([[branch0, branch1]] * n_agents, dtype=np.int32)
             self.env.set_actions(self.behavior_name, ActionTuple(discrete=discrete))
             self.env.step()
-    
+
             decision_steps, terminal_steps = self.env.get_steps(self.behavior_name)
             if len(terminal_steps) > 0:
                 reward += terminal_steps.reward[0]
                 obs = _process_obs(terminal_steps.obs[0][0])
                 self.last_frame = obs
                 self._done = True
+                self._done_reason = self._classify_terminal(terminal_steps)
             elif len(decision_steps) > 0:
                 reward += decision_steps.reward[0]
                 obs = _process_obs(decision_steps.obs[0][0])
                 self.last_frame = obs
-    
+
         self._total_reward += reward
         self._total_steps += 1
-        return self.last_frame, reward, self._done, {}
+        info: dict = {}
+        if self._done:
+            info = {
+                "done_reason": self._done_reason,
+                "total_reward": self._total_reward,
+                "num_steps": self._total_steps,
+            }
+        return self.last_frame, reward, self._done, info
     
     def reset(self) -> tuple[np.ndarray, dict]:
         self.last_frame = DEFAULT_LAST_FRAME
         self._total_steps = DEFAULT_TOTAL_STEPS
         self._total_reward = DEFAULT_TOTAL_REWARD
         self._done = DEFAULT_DONE
+        self._done_reason = None
         self.env.reset()
         self._collect_obs()
         return self.last_frame, {}
@@ -189,7 +216,11 @@ class FrameByFrameScaffold(EnvironmentScaffold[np.ndarray]):
         return self._done
 
     def get_results(self) -> dict:
-        return {"num_steps": self._total_steps, "total_reward": self._total_reward}
+        return {
+            "num_steps": self._total_steps,
+            "total_reward": self._total_reward,
+            "done_reason": self._done_reason,
+        }
 
 
 
