@@ -13,6 +13,7 @@ class EnvironmentScaffold(ABC, Generic[ObsType]):
     """Abstract base class for environment scaffolds which handle converting actions from an llm (whatever the harness) into actions in AAI and return some results."""
     def __init__(self, env: AnimalAIEnvironment):
         self.env = env
+        self._closed = False
 
     @abstractmethod
     def step(self, action: str) -> tuple[ObsType, float, bool, dict]:
@@ -29,7 +30,10 @@ class EnvironmentScaffold(ABC, Generic[ObsType]):
         raise NotImplementedError
     
     def close(self):
-        """Closes the environment."""
+        """Closes the environment (idempotent: safe to call more than once)."""
+        if self._closed:
+            return
+        self._closed = True
         self.env.close()
 
     @property

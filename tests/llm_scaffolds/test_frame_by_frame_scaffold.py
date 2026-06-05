@@ -407,5 +407,28 @@ class TestLastFrame(unittest.TestCase):
         np.testing.assert_array_equal(scaffold.last_frame, _expected_frame(obs_term))
 
 
+# ---------------------------------------------------------------------------
+# Close
+# ---------------------------------------------------------------------------
+
+class TestClose(unittest.TestCase):
+    def test_close_closes_underlying_env(self):
+        env = _make_env()
+        scaffold = FrameByFrameScaffold(env)
+        scaffold.close()
+        env.close.assert_called_once()
+
+    def test_close_is_idempotent(self):
+        # close() may be called both mid-episode (on done/error) and again by
+        # the Inspect task cleanup hook, so repeated calls must be harmless and
+        # must not close the underlying env more than once.
+        env = _make_env()
+        scaffold = FrameByFrameScaffold(env)
+        scaffold.close()
+        scaffold.close()
+        scaffold.close()
+        env.close.assert_called_once()
+
+
 if __name__ == "__main__":
     unittest.main()
