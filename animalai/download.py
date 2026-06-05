@@ -29,7 +29,7 @@ BINARY_NAMES = {
     "MacOS": "MacOS.app",
 }
 
-MOST_RECENT_VERSION = "v4.3.1"
+MOST_RECENT_VERSION = "4.3.1"
 CHECKSUMS = {
     "Windows": "sha256:7b46302d8b7edc26be944840ad5430e44d71bcb6d65abe14cf900cea3388188e",
     "Linux": "sha256:a30ee1af7a2a5bc38db4c570a273c772cc5ea390bbf3964f59caef7542e8c3e8",
@@ -286,13 +286,14 @@ def download_binary(
         )
         try:
             download_file(archive_url, archive_path)
-        except DownloadError:
+        except DownloadError as e:
             raise DownloadError(
                 f"Failed to download AAI binary.\n"
                 f"You can download it manually from:\n"
                 f"  {archive_url}\n"
-                f"Extract it to: {platform_dir}"
-            )
+                f"Extract it to: {platform_dir}\n"
+                f"(Original error: {e})"
+            ) from e
 
         print("Verifying checksum...")
         verify_checksum(archive_path, CHECKSUMS[platform])
