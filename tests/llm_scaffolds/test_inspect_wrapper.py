@@ -50,11 +50,11 @@ def _make_aai_state(scaffold=None):
 
 
 def _make_scaffold(obs=None, reward: float = 1.0, done: bool = False):
-    """Mock EnvironmentScaffold. obs should be HWC float32 to match encode_camera_obs."""
+    """Mock EnvironmentScaffold. obs should be HWC uint8, matching _process_obs output."""
     scaffold = MagicMock(spec=EnvironmentScaffold)
     scaffold.available_actions = _ALL_ACTIONS
     if obs is None:
-        obs = np.zeros((4, 4, 3), dtype=np.float32)
+        obs = np.zeros((4, 4, 3), dtype=np.uint8)
     scaffold.step.return_value = (obs, reward, done, {})
     return scaffold
 
@@ -62,54 +62,39 @@ def _make_scaffold(obs=None, reward: float = 1.0, done: bool = False):
 # ---------------------------------------------------------------------------
 # encode_camera_obs
 # ---------------------------------------------------------------------------
-#
-# encode_camera_obs expects HWC float32 in [0, 1] — the raw ML-Agents camera
-# observation format — and returns a base64-encoded PNG string.
-#
-# Compare with _process_obs (environment_scaffolds.py):
-#   _process_obs — handles CHW → HWC transposition and float32 → uint8; returns
-#                  a numpy array for internal scaffold use.
-#   encode_camera_obs — expects HWC already (no transposition); clips before
-#                       converting (more defensive); encodes to base64 PNG for
-#                       consumption by a vision LLM.
 
 class TestEncodeCameraObs(unittest.TestCase):
     def _decode(self, b64: str) -> Image.Image:
         return Image.open(io.BytesIO(base64.b64decode(b64)))
 
     def test_returns_string(self):
-        result = encode_camera_obs(np.zeros((4, 4, 3), dtype=np.float32))
+        result = encode_camera_obs(np.zeros((4, 4, 3), dtype=np.uint8))
         self.assertIsInstance(result, str)
 
     def test_valid_base64(self):
-        result = encode_camera_obs(np.zeros((4, 4, 3), dtype=np.float32))
+        result = encode_camera_obs(np.zeros((4, 4, 3), dtype=np.uint8))
         base64.b64decode(result)  # must not raise
 
     def test_encodes_as_png(self):
-        result = encode_camera_obs(np.full((4, 4, 3), 0.5, dtype=np.float32))
+        result = encode_camera_obs(np.full((4, 4, 3), 128, dtype=np.uint8))
         self.assertEqual(self._decode(result).format, "PNG")
 
     def test_rgb_image_dimensions(self):
         # Input shape (H=8, W=6, C=3) → PIL reports (width=6, height=8)
-        result = encode_camera_obs(np.zeros((8, 6, 3), dtype=np.float32))
+        result = encode_camera_obs(np.zeros((8, 6, 3), dtype=np.uint8))
         self.assertEqual(self._decode(result).size, (6, 8))
 
-    def test_grayscale_channel_squeezed_to_mode_L(self):
-        # (H, W, 1) should be squeezed so PIL uses mode "L"
-        result = encode_camera_obs(np.full((4, 4, 1), 0.5, dtype=np.float32))
+    def test_grayscale_2d_array_uses_mode_L(self):
+        # _process_obs squeezes (H, W, 1) → (H, W) before returning, so
+        # encode_camera_obs receives a 2D uint8 array for grayscale frames.
+        result = encode_camera_obs(np.full((4, 4), 128, dtype=np.uint8))
         self.assertEqual(self._decode(result).mode, "L")
 
-    def test_pixel_values_scaled_correctly(self):
-        # 0.5 * 255 = 127.5 → truncated to 127 by astype(uint8)
-        obs = np.full((2, 2, 3), 0.5, dtype=np.float32)
+    def test_pixel_values_preserved(self):
+        # uint8 values are passed through unchanged — no scaling or clipping.
+        obs = np.full((2, 2, 3), 127, dtype=np.uint8)
         arr = np.array(self._decode(encode_camera_obs(obs)))
-        np.testing.assert_array_equal(arr, np.full((2, 2, 3), 127, dtype=np.uint8))
-
-    def test_values_above_1_clipped_to_255(self):
-        # clip(0, 255) prevents overflow before astype(uint8)
-        obs = np.full((2, 2, 3), 2.0, dtype=np.float32)
-        arr = np.array(self._decode(encode_camera_obs(obs)))
-        np.testing.assert_array_equal(arr, np.full((2, 2, 3), 255, dtype=np.uint8))
+        np.testing.assert_array_equal(arr, obs)
 
 
 # ---------------------------------------------------------------------------
@@ -204,9 +189,10 @@ class TestAct(unittest.IsolatedAsyncioTestCase):
              patch("animalai.LLM_scaffolds.inspect_wrapper.AnimalAIEnvironment") as mock_env_cls:
             await self._invoke(mock_scaffold_cls, state)
             mock_env_cls.assert_called_once_with(
+                file_name=None,
                 arenas_configurations="arena.yml",
                 useCamera=True,        # same as AAI default
-                no_graphics=True,      # AAI default: False
+                no_graphics=False,      # AAI default: False
                 resolution=84,         # AAI default: 150
                 base_port=5005,        # same as AAI default
                 worker_id=0,           # same as AAI default
@@ -286,7 +272,7 @@ class TestAct(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result, "text observation")
 
     async def test_obs_ndarray_returned_as_content_image_with_data_url(self):
-        obs = np.zeros((4, 4, 3), dtype=np.float32)
+        obs = np.zeros((4, 4, 3), dtype=np.uint8)
         mock_scaffold = _make_scaffold(obs=obs)
         aai_state = _make_aai_state(scaffold=mock_scaffold)
 

@@ -34,12 +34,7 @@ import numpy as np
 from PIL import Image
 
 def encode_camera_obs(obs: np.ndarray) -> str:
-    # ML-Agents visual obs: float32 in [0, 1], shape (H, W, C)
-    arr = (obs * 255).clip(0, 255).astype(np.uint8)
-    # Grayscale comes through as (H, W, 1) — PIL wants (H, W) for mode "L"
-    if arr.ndim == 3 and arr.shape[-1] == 1:
-        arr = arr.squeeze(-1)
-    img = Image.fromarray(arr)
+    img = Image.fromarray(obs)
     buf = io.BytesIO()
     img.save(buf, format="PNG")
     return base64.b64encode(buf.getvalue()).decode("utf-8")
@@ -79,6 +74,7 @@ def act(scaffold_type: type[EnvironmentScaffold], state: TaskState, instance: st
         if AAI_state.AAI is None:
             # create the environment based off the information in the task state
             AAI_state.AAI = scaffold_type(AnimalAIEnvironment(
+                file_name=state.metadata.get("file_name", None),
                 arenas_configurations=state.metadata["arenas_configurations"],
                 useCamera=state.metadata.get("useCamera", True),
                 no_graphics=state.metadata.get("no_graphics", False),
@@ -105,7 +101,6 @@ def act(scaffold_type: type[EnvironmentScaffold], state: TaskState, instance: st
         if isinstance(obs, str):
             return obs
         elif isinstance(obs, np.ndarray):
-            # encode the image as a base64 string
             encoded_image = encode_camera_obs(obs)
             return ContentImage(image=f"data:image/png;base64,{encoded_image}")
         else:
