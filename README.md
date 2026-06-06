@@ -18,6 +18,9 @@ For more information about the ways you can contribute to Animal-AI, visit our w
 If you are new to contributing to open source, [this](https://github.com/Kinds-of-Intelligence-CFI/animal-ai/blob/main/CONTRIBUTING.md) guide helps explain why, what, and how to successfully get involved.
 
 ## Version History
+* v6.1.2
+  + Fixed the version string for the executable autodownload
+  + Misc fixes to the inspect wrapper
 * v6.1.1
   + Updated the type hints in the scaffold to be supported by more python versions
 * v6.1.0
