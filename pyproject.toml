@@ -35,6 +35,9 @@ dependencies = [
 inspect-ai = [
     "inspect-ai>=0.3.205",
 ]
+gym = [
+    "gymnasium>=1.0",
+]
 
 [project.urls]
 "Website"         = "https://animalai.org/"
