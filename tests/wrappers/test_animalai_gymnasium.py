@@ -200,6 +200,103 @@ class TestObservations(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
+# Observation selection
+# ---------------------------------------------------------------------------
+
+class TestObservationSelection(unittest.TestCase):
+    def test_single_camera_is_bare_box(self):
+        wrapper = AnimalAIGymnasiumWrapper(
+            _make_env(useCamera=True, useRayCasts=True),
+            include_camera=True,
+            include_rays=False,
+            include_health=False,
+            include_velocity=False,
+            include_position=False,
+        )
+        self.assertIsInstance(wrapper.observation_space, spaces.Box)
+        self.assertEqual(wrapper.observation_space.shape, (4, 4, 3))
+        obs, _ = wrapper.reset()
+        self.assertIsInstance(obs, np.ndarray)
+        self.assertEqual(obs.shape, (4, 4, 3))
+        self.assertTrue(wrapper.observation_space.contains(obs))
+        step_obs = wrapper.step([1, 0])[0]
+        self.assertIsInstance(step_obs, np.ndarray)
+        self.assertEqual(step_obs.shape, (4, 4, 3))
+
+    def test_single_rays_is_bare_box(self):
+        wrapper = AnimalAIGymnasiumWrapper(
+            _make_env(useCamera=True, useRayCasts=True),
+            include_camera=False,
+            include_rays=True,
+            include_health=False,
+            include_velocity=False,
+            include_position=False,
+        )
+        self.assertIsInstance(wrapper.observation_space, spaces.Box)
+        self.assertEqual(wrapper.observation_space.shape, (6,))
+        obs, _ = wrapper.reset()
+        self.assertIsInstance(obs, np.ndarray)
+        self.assertEqual(obs.shape, (6,))
+
+    def test_two_streams_is_dict_with_only_those_keys(self):
+        wrapper = AnimalAIGymnasiumWrapper(
+            _make_env(useCamera=True, useRayCasts=False),
+            include_camera=True,
+            include_health=False,
+            include_velocity=False,
+            include_position=True,
+        )
+        self.assertIsInstance(wrapper.observation_space, spaces.Dict)
+        self.assertEqual(set(wrapper.observation_space.spaces), {"camera", "position"})
+        obs, _ = wrapper.reset()
+        self.assertEqual(set(obs), {"camera", "position"})
+
+    def test_default_is_full_dict(self):
+        wrapper = AnimalAIGymnasiumWrapper(_make_env(useCamera=True, useRayCasts=True))
+        self.assertIsInstance(wrapper.observation_space, spaces.Dict)
+        self.assertEqual(
+            set(wrapper.observation_space.spaces),
+            {"camera", "rays", "health", "velocity", "position"},
+        )
+
+    def test_require_camera_when_absent_raises(self):
+        with self.assertRaises(ValueError):
+            AnimalAIGymnasiumWrapper(
+                _make_env(useCamera=False, useRayCasts=True),
+                include_camera=True,
+            )
+
+    def test_no_streams_selected_raises(self):
+        with self.assertRaises(ValueError):
+            AnimalAIGymnasiumWrapper(
+                _make_env(useCamera=False, useRayCasts=False),
+                include_health=False,
+                include_velocity=False,
+                include_position=False,
+            )
+
+
+# ---------------------------------------------------------------------------
+# Arena swap via reset(options=...)
+# ---------------------------------------------------------------------------
+
+class TestArenaSwap(unittest.TestCase):
+    def test_reset_with_arena_config_forwarded(self):
+        env = _make_env()
+        wrapper = AnimalAIGymnasiumWrapper(env)
+        env.reset.reset_mock()
+        wrapper.reset(options={"arena_config": "some/arena.yml"})
+        env.reset.assert_called_once_with(arenas_configurations="some/arena.yml")
+
+    def test_reset_without_options_uses_default_arena(self):
+        env = _make_env()
+        wrapper = AnimalAIGymnasiumWrapper(env)
+        env.reset.reset_mock()
+        wrapper.reset()
+        env.reset.assert_called_once_with()
+
+
+# ---------------------------------------------------------------------------
 # Guards
 # ---------------------------------------------------------------------------
 

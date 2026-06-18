@@ -169,13 +169,21 @@ class UnityToGymnasiumWrapper(gym.Env):
         if seed is not None:
             self.action_space.seed(seed)
 
-        self._env.reset()
+        self._reset_unity_env(options)
         decision_step, _ = self._env.get_steps(self.name)
         n_agents = len(decision_step)
         self._check_agents(n_agents)
 
         obs = self._get_obs(decision_step)
         return obs, {"step": decision_step}
+
+    def _reset_unity_env(self, options: Optional[dict]) -> None:
+        """Reset the wrapped Unity env.
+
+        Subclasses can override this to consume ``reset`` options (e.g. to swap
+        the environment configuration) while reusing the rest of ``reset``.
+        """
+        self._env.reset()
 
     def step(self, action: List[Any]) -> GymStepResult:
         """Run one timestep and return (obs, reward, terminated, truncated, info)."""
