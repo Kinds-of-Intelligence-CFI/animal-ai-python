@@ -18,6 +18,8 @@ For more information about the ways you can contribute to Animal-AI, visit our w
 If you are new to contributing to open source, [this](https://github.com/Kinds-of-Intelligence-CFI/animal-ai/blob/main/CONTRIBUTING.md) guide helps explain why, what, and how to successfully get involved.
 
 ## Version History
+* v6.1.3
+  + Added UnityToGymnasium and AnimalAIGymnasiumWrapper wrappers  
 * v6.1.2
   + Fixed the version string for the executable autodownload
   + Misc fixes to the inspect wrapper
