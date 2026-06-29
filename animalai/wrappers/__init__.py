@@ -3,6 +3,8 @@ __all__ = [
     "UnityGymnasiumException",
     "ActionFlattener",
     "AnimalAIGymnasiumWrapper",
+    "make_animalai_env_fns",
+    "make_animalai_vec_env",
 ]
 
 
@@ -15,4 +17,8 @@ def __getattr__(name):
         from animalai.wrappers.animalai_gymnasium import AnimalAIGymnasiumWrapper
 
         return AnimalAIGymnasiumWrapper
+    if name in ("make_animalai_env_fns", "make_animalai_vec_env"):
+        from animalai.wrappers import vector
+
+        return getattr(vector, name)
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
