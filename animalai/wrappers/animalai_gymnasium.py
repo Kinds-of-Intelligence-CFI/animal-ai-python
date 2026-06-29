@@ -1,4 +1,4 @@
-from typing import Any, Optional, Union
+from typing import Dict, Optional, Union
 
 import numpy as np
 
@@ -59,6 +59,8 @@ class AnimalAIGymnasiumWrapper(UnityToGymnasiumWrapper):
                 "AnimalAIGymnasiumWrapper requires an AnimalAIEnvironment. "
                 "Use UnityToGymnasiumWrapper for other Unity environments."
             )
+
+        self._env : AnimalAIEnvironment
 
         # Whether the env actually produces these streams (drives spec order).
         self._env_camera = unity_env.useCamera
@@ -130,7 +132,9 @@ class AnimalAIGymnasiumWrapper(UnityToGymnasiumWrapper):
             return obs_spaces[self._obs_keys[0]]
         return spaces.Dict(obs_spaces)
 
-    def _get_obs(self, info: Union[DecisionSteps, TerminalSteps]) -> Any:
+    def _get_obs(
+        self, info: Union[DecisionSteps, TerminalSteps]
+    ) -> Union[np.ndarray, Dict[str, np.ndarray]]:
         obs_dict = self._env.get_obs_dict(info.obs)
         out: dict = {}
         for key in self._obs_keys:

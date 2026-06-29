@@ -1,5 +1,5 @@
 import itertools
-from typing import Any, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
@@ -25,8 +25,16 @@ class UnityGymnasiumException(error.Error):
 
 logger = logging_util.get_logger(__name__)
 
+# Every observation is built from ndarrays; only the container varies by
+# wrapper / flags: a bare array, a list of arrays (allow_multiple_obs), or a
+# dict of arrays keyed by stream name (AnimalAIGymnasiumWrapper).
+Observation = Union[np.ndarray, List[np.ndarray], Dict[str, np.ndarray]]
+# Action shape is fixed by the wrapper: Discrete -> int, MultiDiscrete/Box ->
+# ndarray, flattened-branch lookup -> list of ints.
+ActType = Union[int, np.ndarray, Sequence[int]]
+
 # (observation, reward, terminated, truncated, info)
-GymnasiumStepResult = Tuple[Any, float, bool, bool, dict]
+GymnasiumStepResult = Tuple[Observation, float, bool, bool, dict]
 
 
 class UnityToGymnasiumWrapper(gymnasium.Env):
@@ -165,7 +173,7 @@ class UnityToGymnasiumWrapper(gymnasium.Env):
         *,
         seed: Optional[int] = None,
         options: Optional[dict] = None,
-    ) -> Tuple[Any, dict]:
+    ) -> Tuple[Observation, dict]:
         """Reset the environment and return the initial observation and info dict."""
         super().reset(seed=seed)
         if seed is not None:
@@ -187,7 +195,7 @@ class UnityToGymnasiumWrapper(gymnasium.Env):
         """
         self._env.reset()
 
-    def step(self, action: List[Any]) -> GymnasiumStepResult:
+    def step(self, action: ActType) -> GymnasiumStepResult:
         """Run one timestep and return (obs, reward, terminated, truncated, info)."""
         if self._flattener is not None:
             # Translate the discrete scalar action into a branched action list.
@@ -223,7 +231,7 @@ class UnityToGymnasiumWrapper(gymnasium.Env):
             truncated = False
         return obs, float(info.reward[0]), terminated, truncated, {"step": info}
 
-    def _get_obs(self, info: Union[DecisionSteps, TerminalSteps]) -> Any:
+    def _get_obs(self, info: Union[DecisionSteps, TerminalSteps]) -> Observation:
         """Build the observation for the current step.
 
         Subclasses can override this to change the observation format while
@@ -231,7 +239,7 @@ class UnityToGymnasiumWrapper(gymnasium.Env):
         """
         if self._allow_multiple_obs:
             visual_obs = self._get_vis_obs_list(info)
-            default_observation: Any = [
+            default_observation = [
                 self._preprocess_single(obs[0]) for obs in visual_obs
             ]
             if self._get_vec_obs_size() >= 1:
