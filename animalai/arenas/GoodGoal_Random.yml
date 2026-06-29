@@ -2,7 +2,7 @@
 arenas:
   0: !Arena
     passMark: 1
-    timeLimit:500
+    timeLimit: 500
     items:
       - !Item
         name: Agent

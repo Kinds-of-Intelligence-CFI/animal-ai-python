@@ -4,7 +4,7 @@ import random
 from pathlib import Path
 
 from animalai import AnimalAIEnvironment, arenas
-from animalai.executable import find_executable
+from animalai.executable import find_or_download_executable
 
 def play(configuration_file: str = None, env_path: str = None, log_path: str = None) -> None:
     """
@@ -16,7 +16,7 @@ def play(configuration_file: str = None, env_path: str = None, log_path: str = N
 
     print("Initializing AAI environment")
     environment = AnimalAIEnvironment(
-        file_name=env_path if env_path is not None else str(find_executable(Path(""))),
+        file_name=env_path or find_or_download_executable(),
         base_port=5005 + random.randint(0, 1000),
         arenas_configurations=configuration_file if configuration_file is not None else arenas.GOOD_GOAL_RANDOM_POS,
         play=True,
