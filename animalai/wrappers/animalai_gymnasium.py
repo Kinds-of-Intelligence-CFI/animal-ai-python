@@ -6,8 +6,8 @@ try:
     from gymnasium import spaces
 except ImportError as exc:
     raise ImportError(
-        "The gymnasium wrappers require the optional 'gym' extra. "
-        "Install it with: pip install animalai[gym]"
+        "The gymnasium wrappers require the optional 'gymnasium' extra. "
+        "Install it with: pip install animalai[gymnasium]"
     ) from exc
 
 from mlagents_envs.base_env import DecisionSteps, TerminalSteps

@@ -4,12 +4,12 @@ from typing import Any, List, Optional, Tuple, Union
 import numpy as np
 
 try:
-    import gymnasium as gym
+    import gymnasium
     from gymnasium import error, spaces
 except ImportError as exc:
     raise ImportError(
-        "The gymnasium wrappers require the optional 'gym' extra. "
-        "Install it with: pip install animalai[gym]"
+        "The gymnasium wrappers require the optional 'gymnasium' extra. "
+        "Install it with: pip install animalai[gymnasium]"
     ) from exc
 
 from mlagents_envs.base_env import ActionTuple, BaseEnv
@@ -26,13 +26,15 @@ class UnityGymnasiumException(error.Error):
 logger = logging_util.get_logger(__name__)
 
 # (observation, reward, terminated, truncated, info)
-GymStepResult = Tuple[Any, float, bool, bool, dict]
+GymnasiumStepResult = Tuple[Any, float, bool, bool, dict]
 
 
-class UnityToGymnasiumWrapper(gym.Env):
+class UnityToGymnasiumWrapper(gymnasium.Env):
     """Wrapper that converts a Unity BaseEnv into a gymnasium.Env.
 
     Based off the UnityToGymWrapper in the ml-agents repo, but updated to work with gymnasium so we aren't version locked.
+
+    see: https://github.com/Unity-Technologies/ml-agents/blob/aeb6f7aee8d9b4aa63329476557d94d87c541146/ml-agents-envs/mlagents_envs/envs/unity_gym_env.py
 
     This is the generic wrapper that should work for all Unity environments.
     """
@@ -109,7 +111,7 @@ class UnityToGymnasiumWrapper(gym.Env):
 
         self.observation_space = self._build_observation_space()
 
-    def _build_action_space(self, flatten_branched: bool) -> gym.Space:
+    def _build_action_space(self, flatten_branched: bool) -> gymnasium.Space:
         if self.group_spec.action_spec.is_discrete():
             self.action_size = self.group_spec.action_spec.discrete_size
             branches = self.group_spec.action_spec.discrete_branches
@@ -135,8 +137,8 @@ class UnityToGymnasiumWrapper(gym.Env):
             "discrete and continuous actions."
         )
 
-    def _build_observation_space(self) -> gym.Space:
-        list_spaces: List[gym.Space] = []
+    def _build_observation_space(self) -> gymnasium.Space:
+        list_spaces: List[gymnasium.Space] = []
         shapes = self._get_vis_obs_shape()
         for shape in shapes:
             if self.uint8_visual:
@@ -185,7 +187,7 @@ class UnityToGymnasiumWrapper(gym.Env):
         """
         self._env.reset()
 
-    def step(self, action: List[Any]) -> GymStepResult:
+    def step(self, action: List[Any]) -> GymnasiumStepResult:
         """Run one timestep and return (obs, reward, terminated, truncated, info)."""
         if self._flattener is not None:
             # Translate the discrete scalar action into a branched action list.
@@ -209,7 +211,7 @@ class UnityToGymnasiumWrapper(gym.Env):
 
     def _single_step(
         self, info: Union[DecisionSteps, TerminalSteps], terminal: bool
-    ) -> GymStepResult:
+    ) -> GymnasiumStepResult:
         obs = self._get_obs(info)
         if terminal:
             # interrupted == hit a step limit (truncation); otherwise a real terminal state.
