@@ -1,15 +1,15 @@
 import itertools
-from typing import Any, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
 try:
-    import gymnasium as gym
+    import gymnasium
     from gymnasium import error, spaces
 except ImportError as exc:
     raise ImportError(
-        "The gymnasium wrappers require the optional 'gym' extra. "
-        "Install it with: pip install animalai[gym]"
+        "The gymnasium wrappers require the optional 'gymnasium' extra. "
+        "Install it with: pip install animalai[gymnasium]"
     ) from exc
 
 from mlagents_envs.base_env import ActionTuple, BaseEnv
@@ -25,14 +25,24 @@ class UnityGymnasiumException(error.Error):
 
 logger = logging_util.get_logger(__name__)
 
+# Every observation is built from ndarrays; only the container varies by
+# wrapper / flags: a bare array, a list of arrays (allow_multiple_obs), or a
+# dict of arrays keyed by stream name (AnimalAIGymnasiumWrapper).
+Observation = Union[np.ndarray, List[np.ndarray], Dict[str, np.ndarray]]
+# Action shape is fixed by the wrapper: Discrete -> int, MultiDiscrete/Box ->
+# ndarray, flattened-branch lookup -> list of ints.
+ActType = Union[int, np.ndarray, Sequence[int]]
+
 # (observation, reward, terminated, truncated, info)
-GymStepResult = Tuple[Any, float, bool, bool, dict]
+GymnasiumStepResult = Tuple[Observation, float, bool, bool, dict]
 
 
-class UnityToGymnasiumWrapper(gym.Env):
+class UnityToGymnasiumWrapper(gymnasium.Env):
     """Wrapper that converts a Unity BaseEnv into a gymnasium.Env.
 
     Based off the UnityToGymWrapper in the ml-agents repo, but updated to work with gymnasium so we aren't version locked.
+
+    see: https://github.com/Unity-Technologies/ml-agents/blob/aeb6f7aee8d9b4aa63329476557d94d87c541146/ml-agents-envs/mlagents_envs/envs/unity_gym_env.py
 
     This is the generic wrapper that should work for all Unity environments.
     """
@@ -109,7 +119,7 @@ class UnityToGymnasiumWrapper(gym.Env):
 
         self.observation_space = self._build_observation_space()
 
-    def _build_action_space(self, flatten_branched: bool) -> gym.Space:
+    def _build_action_space(self, flatten_branched: bool) -> gymnasium.Space:
         if self.group_spec.action_spec.is_discrete():
             self.action_size = self.group_spec.action_spec.discrete_size
             branches = self.group_spec.action_spec.discrete_branches
@@ -135,8 +145,8 @@ class UnityToGymnasiumWrapper(gym.Env):
             "discrete and continuous actions."
         )
 
-    def _build_observation_space(self) -> gym.Space:
-        list_spaces: List[gym.Space] = []
+    def _build_observation_space(self) -> gymnasium.Space:
+        list_spaces: List[gymnasium.Space] = []
         shapes = self._get_vis_obs_shape()
         for shape in shapes:
             if self.uint8_visual:
@@ -163,7 +173,7 @@ class UnityToGymnasiumWrapper(gym.Env):
         *,
         seed: Optional[int] = None,
         options: Optional[dict] = None,
-    ) -> Tuple[Any, dict]:
+    ) -> Tuple[Observation, dict]:
         """Reset the environment and return the initial observation and info dict."""
         super().reset(seed=seed)
         if seed is not None:
@@ -185,7 +195,7 @@ class UnityToGymnasiumWrapper(gym.Env):
         """
         self._env.reset()
 
-    def step(self, action: List[Any]) -> GymStepResult:
+    def step(self, action: ActType) -> GymnasiumStepResult:
         """Run one timestep and return (obs, reward, terminated, truncated, info)."""
         if self._flattener is not None:
             # Translate the discrete scalar action into a branched action list.
@@ -209,7 +219,7 @@ class UnityToGymnasiumWrapper(gym.Env):
 
     def _single_step(
         self, info: Union[DecisionSteps, TerminalSteps], terminal: bool
-    ) -> GymStepResult:
+    ) -> GymnasiumStepResult:
         obs = self._get_obs(info)
         if terminal:
             # interrupted == hit a step limit (truncation); otherwise a real terminal state.
@@ -221,7 +231,7 @@ class UnityToGymnasiumWrapper(gym.Env):
             truncated = False
         return obs, float(info.reward[0]), terminated, truncated, {"step": info}
 
-    def _get_obs(self, info: Union[DecisionSteps, TerminalSteps]) -> Any:
+    def _get_obs(self, info: Union[DecisionSteps, TerminalSteps]) -> Observation:
         """Build the observation for the current step.
 
         Subclasses can override this to change the observation format while
@@ -229,7 +239,7 @@ class UnityToGymnasiumWrapper(gym.Env):
         """
         if self._allow_multiple_obs:
             visual_obs = self._get_vis_obs_list(info)
-            default_observation: Any = [
+            default_observation = [
                 self._preprocess_single(obs[0]) for obs in visual_obs
             ]
             if self._get_vec_obs_size() >= 1:

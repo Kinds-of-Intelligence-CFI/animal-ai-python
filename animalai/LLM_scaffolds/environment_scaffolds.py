@@ -17,7 +17,7 @@ class EnvironmentScaffold(ABC, Generic[ObsType]):
 
     @abstractmethod
     def step(self, action: str) -> tuple[ObsType, float, bool, dict]:
-        """Takes an action and returns (obs, reward, done, info) following gym convention."""
+        """Takes an action and returns (obs, reward, done, info) following gymnasium convention."""
         raise NotImplementedError
 
     @abstractmethod
