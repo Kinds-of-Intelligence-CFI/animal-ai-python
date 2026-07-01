@@ -9,14 +9,18 @@ each with a unique ``worker_id`` (and ``seed``) so ports do not collide -- and
 composing them with Gymnasium's built-in vector envs.
 """
 
+import os
+import tempfile
+from contextlib import nullcontext
 from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
 try:
     import gymnasium
+    from filelock import FileLock
 except ImportError as exc:
     raise ImportError(
-        "The gymnasium wrappers require the optional 'gym' extra. "
-        "Install it with: pip install animalai[gym]"
+        "The gymnasium wrappers require the optional 'gymnasium' extra. "
+        "Install it with: pip install animalai[gymnasium]"
     ) from exc
 
 from animalai.environment import AnimalAIEnvironment
@@ -38,6 +42,9 @@ def make_animalai_env_fns(
     arenas_configurations: ArenaConfig = "",
     env_kwargs: Optional[Dict[str, Any]] = None,
     wrapper_kwargs: Optional[Dict[str, Any]] = None,
+    serialize_launch: bool = True,
+    launch_lock_timeout: float = 300.0,
+    launch_lock_path: Optional[str] = None,
 ) -> List[Callable[[], AnimalAIGymnasiumWrapper]]:
     """Build ``num_envs`` zero-argument env factories ("thunks").
 
@@ -72,6 +79,21 @@ def make_animalai_env_fns(
     wrapper_kwargs : dict, optional
         Extra keyword arguments forwarded to every ``AnimalAIGymnasiumWrapper``
         (e.g. the ``include_*`` observation-stream flags).
+    serialize_launch : bool
+        When ``True`` (default), each thunk acquires a cross-process file lock
+        while it constructs its environment, so only one Unity instance goes
+        through the launch-and-handshake at a time. This prevents concurrent
+        launches (notably under ``async`` on Windows) from contending and
+        exceeding the handshake timeout. The lock is released once the
+        environment has connected, so stepping still runs fully in parallel.
+        Set to ``False`` to launch all environments simultaneously.
+    launch_lock_timeout : float
+        Seconds to wait to acquire the launch lock before raising, guarding
+        against a hung launch blocking the rest of the batch indefinitely.
+    launch_lock_path : str, optional
+        Path of the lock file shared by this batch's thunks. Defaults to
+        ``<tempdir>/animalai_launch_<base_port>.lock``; keying on ``base_port``
+        lets independent vector envs launch without blocking each other.
     """
     if num_envs < 1:
         raise ValueError(f"num_envs must be >= 1, got {num_envs}.")
@@ -88,16 +110,27 @@ def make_animalai_env_fns(
 
     arena_configs = _resolve_arena_configs(arenas_configurations, num_envs)
 
+    if serialize_launch and launch_lock_path is None:
+        launch_lock_path = os.path.join(
+            tempfile.gettempdir(), f"animalai_launch_{base_port}.lock"
+        )
+
     def _make_thunk(index: int) -> Callable[[], AnimalAIGymnasiumWrapper]:
         def _thunk() -> AnimalAIGymnasiumWrapper:
-            env = AnimalAIEnvironment(
-                worker_id=worker_id_start + index,
-                base_port=base_port,
-                seed=seed + index,
-                arenas_configurations=arena_configs[index],
-                **env_kwargs,
+            launch_guard = (
+                FileLock(launch_lock_path, timeout=launch_lock_timeout)
+                if serialize_launch
+                else nullcontext()
             )
-            return AnimalAIGymnasiumWrapper(env, **wrapper_kwargs)
+            with launch_guard:
+                env = AnimalAIEnvironment(
+                    worker_id=worker_id_start + index,
+                    base_port=base_port,
+                    seed=seed + index,
+                    arenas_configurations=arena_configs[index],
+                    **env_kwargs,
+                )
+                return AnimalAIGymnasiumWrapper(env, **wrapper_kwargs)
 
         return _thunk
 
@@ -126,7 +159,8 @@ def make_animalai_vec_env(
     **kwargs
         Forwarded to :func:`make_animalai_env_fns` (``worker_id_start``,
         ``base_port``, ``seed``, ``arenas_configurations``, ``env_kwargs``,
-        ``wrapper_kwargs``).
+        ``wrapper_kwargs``, ``serialize_launch``, ``launch_lock_timeout``,
+        ``launch_lock_path``).
     """
     if vectorization_mode not in ("sync", "async"):
         raise ValueError(

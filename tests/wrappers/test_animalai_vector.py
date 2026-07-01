@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import numpy as np
 import gymnasium
@@ -211,6 +211,11 @@ class TestEnvFns(_VectorTestCase):
         self.assertIsInstance(wrapper.observation_space, spaces.Box)
         self.assertEqual(wrapper.observation_space.shape, (6,))
 
+    def test_timeout_wait_forwarded(self):
+        fns = vector.make_animalai_env_fns(1, env_kwargs={"timeout_wait": 120})
+        env = fns[0]()._env
+        self.assertEqual(env.extra.get("timeout_wait"), 120)
+
     def test_reserved_keys_in_env_kwargs_raise(self):
         for key in ("worker_id", "base_port", "seed", "arenas_configurations"):
             with self.assertRaises(ValueError):
@@ -255,6 +260,92 @@ class TestVecEnv(_VectorTestCase):
         envs = list(_FakeAAIEnv.instances)
         venv.close()
         self.assertTrue(all(e.closed for e in envs))
+
+
+# ---------------------------------------------------------------------------
+# Launch serialization: cross-process file lock around env construction
+# ---------------------------------------------------------------------------
+
+class _SpyLock:
+    """Stand-in for filelock.FileLock that records its lifecycle.
+
+    events interleaves lock enter/exit with env construction so a test can
+    assert the env is built *while the lock is held*. calls records the
+    (path, timeout) each FileLock was constructed with.
+    """
+
+    events: list = []
+    calls: list = []
+
+    def __init__(self, path, timeout=-1):
+        _SpyLock.calls.append((str(path), timeout))
+        self._path = str(path)
+
+    def __enter__(self):
+        _SpyLock.events.append(("enter", self._path))
+        return self
+
+    def __exit__(self, *exc):
+        _SpyLock.events.append(("exit", self._path))
+        return False
+
+
+class _LoggingFakeEnv(_FakeAAIEnv):
+    """A fake env that marks the moment of its construction on _SpyLock.events."""
+
+    def __init__(self, **kwargs):
+        _SpyLock.events.append(("construct", None))
+        super().__init__(**kwargs)
+
+
+class TestLaunchLock(_VectorTestCase):
+    def setUp(self):
+        super().setUp()
+        _SpyLock.events = []
+        _SpyLock.calls = []
+
+    def test_lock_held_around_construction(self):
+        vector.AnimalAIEnvironment = _LoggingFakeEnv
+        with patch.object(vector, "FileLock", _SpyLock):
+            fn = vector.make_animalai_env_fns(1, env_kwargs={"useCamera": False})[0]
+            fn()
+        self.assertEqual(
+            [kind for kind, _ in _SpyLock.events],
+            ["enter", "construct", "exit"],
+        )
+
+    def test_lock_path_keyed_on_base_port(self):
+        with patch.object(vector, "FileLock", _SpyLock):
+            vector.make_animalai_env_fns(1, base_port=6123)[0]()
+        self.assertEqual(len(_SpyLock.calls), 1)
+        path, _ = _SpyLock.calls[0]
+        self.assertIn("animalai_launch_6123", path)
+
+    def test_lock_timeout_forwarded(self):
+        with patch.object(vector, "FileLock", _SpyLock):
+            vector.make_animalai_env_fns(1, launch_lock_timeout=42.0)[0]()
+        self.assertEqual(_SpyLock.calls[0][1], 42.0)
+
+    def test_shared_path_across_thunks(self):
+        with patch.object(vector, "FileLock", _SpyLock):
+            for fn in vector.make_animalai_env_fns(3, base_port=7000):
+                fn()
+        paths = {path for path, _ in _SpyLock.calls}
+        self.assertEqual(len(paths), 1)
+
+    def test_custom_lock_path(self):
+        with patch.object(vector, "FileLock", _SpyLock):
+            vector.make_animalai_env_fns(
+                1, launch_lock_path="/tmp/my.lock"
+            )[0]()
+        self.assertEqual(_SpyLock.calls[0][0], "/tmp/my.lock")
+
+    def test_opt_out_skips_lock(self):
+        with patch.object(vector, "FileLock", _SpyLock):
+            vector.make_animalai_env_fns(1, serialize_launch=False)[0]()
+        self.assertEqual(_SpyLock.calls, [])
+        # Env is still built without the lock.
+        self.assertEqual(len(_FakeAAIEnv.instances), 1)
 
 
 if __name__ == "__main__":
