@@ -140,7 +140,7 @@ def make_animalai_env_fns(
 def make_animalai_vec_env(
     num_envs: int,
     *,
-    vectorization_mode: str = "sync",
+    vectorization_mode: str = "async",
     **kwargs: Any,
 ) -> "gymnasium.vector.VectorEnv":
     """Build a Gymnasium vector env wrapping ``num_envs`` Animal-AI envs.
@@ -153,8 +153,8 @@ def make_animalai_vec_env(
     num_envs : int
         Number of environments to run in parallel.
     vectorization_mode : {"sync", "async"}
-        ``"sync"`` (default) steps the environments sequentially in this process
-        via ``SyncVectorEnv``. ``"async"`` runs each environment in its own
+        ``"sync"`` steps the environments sequentially in this process
+        via ``SyncVectorEnv``. ``"async"`` (default) runs each environment in its own
         subprocess via ``AsyncVectorEnv`` for step-time parallelism.
     **kwargs
         Forwarded to :func:`make_animalai_env_fns` (``worker_id_start``,
