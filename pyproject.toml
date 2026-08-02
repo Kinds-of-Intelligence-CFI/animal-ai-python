@@ -37,6 +37,7 @@ inspect-ai = [
 ]
 gymnasium = [
     "gymnasium>=1.0",
+    "filelock",
 ]
 
 [project.urls]
