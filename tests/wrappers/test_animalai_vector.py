@@ -235,8 +235,14 @@ class TestVecEnv(_VectorTestCase):
         kwargs.setdefault("env_kwargs", {"useCamera": False})
         return vector.make_animalai_vec_env(num_envs, **kwargs)
 
-    def test_returns_sync_vector_env(self):
+    def test_defaults_to_async_vector_env(self):
         venv = self._make(2)
+        self.assertIsInstance(venv, gymnasium.vector.AsyncVectorEnv)
+        self.assertEqual(venv.num_envs, 2)
+        venv.close()
+
+    def test_sync_mode_selects_sync_env(self):
+        venv = self._make(2, vectorization_mode="sync")
         self.assertIsInstance(venv, gymnasium.vector.SyncVectorEnv)
         self.assertEqual(venv.num_envs, 2)
         venv.close()
