@@ -17,7 +17,39 @@ For more information about the ways you can contribute to Animal-AI, visit our w
 
 If you are new to contributing to open source, [this](https://github.com/Kinds-of-Intelligence-CFI/animal-ai/blob/main/CONTRIBUTING.md) guide helps explain why, what, and how to successfully get involved.
 
+## Multiple agents
+
+An arena can contain several `Agent` items (one per agent, each with its
+own `positions`, `rotations`, `skins`, `frozenAgentDelays` and optional `teams: [N]`), plus an optional
+arena-level `episodeEnd: any | all`. All agents on a team share one behavior (`AnimalAI?team=0` by default)
+and arrive together in its `DecisionSteps`, one row per agent:
+
+```python
+from animalai.actions import AAIActions, stack_actions
+
+behavior = list(env.behavior_specs.keys())[0]
+actions = AAIActions()
+decision_steps, terminal_steps = env.get_steps(behavior)
+for agent_id, obs in zip(decision_steps.agent_id, env.get_obs_dicts(decision_steps.obs)):
+    print(agent_id, obs["health"], obs["position"])
+# one action per agent, in the order of decision_steps.agent_id
+env.set_actions(behavior, stack_actions([actions.FORWARDS for _ in decision_steps.agent_id]))
+```
+
+Agents in an arena finish their episodes together. The gymnasium wrappers and LLM scaffolds are
+single-agent and raise an error for multi-agent arenas, and play mode (`play=True`) supports one agent
+only. See `tests/multiAgent.py` for a complete example.
+
+Rays report 18 object types, including other agents (`RayCastObjects.AGENT`). `RayCastParser` raises if
+asked for an object the environment's rays don't report.
+
 ## Version History
+* Unreleased
+  + Multi-agent support: `AnimalAIEnvironment.get_obs_dict(obs, agent_index)` and `get_obs_dicts(obs)`,
+    `stack_actions`, `RayCastObjects.AGENT`
+  + Fixed `AAIActions(no_agents=N)` building a single discrete row for N > 1
+  + `RayCastParser` raises for objects the environment's rays don't report (previously returned zeros)
+  + Gymnasium wrappers and `FrameByFrameScaffold` give clear errors for multi-agent arenas
 * v6.1.3
   + Added UnityToGymnasium and AnimalAIGymnasiumWrapper wrappers  
   + Added make_animalai_vec_env / make_animalai_env_fns helpers for vectorised (parallel) environments  
