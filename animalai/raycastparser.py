@@ -11,7 +11,8 @@ of the data that only contains relevant objects.
 class RayCastObjects(enum.Enum):
     """
     Enumeration of possible objects detected by the raycast.
-    The values should correspond with how they are defined in the AnimalAI Unity environment.
+    Each value is the index of the object's tag in the Unity agent's ray sensor
+    (``Assets/Resources/AAI3Agent.prefab``, "Detectable Tags"), so the order must match it.
     """
 
     ARENA = 0
@@ -24,13 +25,14 @@ class RayCastObjects(enum.Enum):
     DEATHZONE = 7
     HOTZONE = 8
     RAMP = 9
-    SPAWNERBUTTON = 10
-    SIGNBOARD = 11
+    SPAWNERBUTTON = 10  # Unity tag "PillarButton"
+    SIGNBOARD = 11  # Unity tag "SignPoster"
     DECOYGOAL = 12
     DECOYGOALBOUNCE = 13
-    HOLLOWBOX = 14
+    HOLLOWBOX = 14  # Unity tag "HollowObj"
     BADGOALMULTI = 15
     DATAZONE = 16
+    AGENT = 17  # Another agent (multi-agent arenas)
 
 
 class RayCastParser:
@@ -80,8 +82,23 @@ class RayCastParser:
             raycast = raycast.get("rays", [])
         if not isinstance(raycast, (list, np.ndarray)) or len(raycast) == 0:
             raise ValueError("Invalid raycast length or num of rays.")
+        if len(raycast) % self.numberOfRays != 0:
+            raise ValueError(
+                f"Raycast length {len(raycast)} is not a multiple of numberOfRays "
+                f"({self.numberOfRays}); check raysPerSide (numberOfRays = 2 * raysPerSide + 1)."
+            )
 
         self.numberDetectableObjects = int(len(raycast) / self.numberOfRays) - 2
+        undetectable = [
+            obj for obj in self.listOfObjects if obj.value >= self.numberDetectableObjects
+        ]
+        if undetectable:
+            raise ValueError(
+                f"This environment's rays only report {self.numberDetectableObjects} object "
+                f"types, so {[obj.name for obj in undetectable]} can never be detected. "
+                f"This version of animalai expects {len(RayCastObjects)}; "
+                "check the build matches it."
+            )
         parsedRaycast = np.zeros((len(self.listOfObjects), self.numberOfRays))
         for i in range(self.numberOfRays):
             for j in range(self.numberDetectableObjects):
