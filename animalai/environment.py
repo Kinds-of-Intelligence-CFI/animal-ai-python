@@ -122,6 +122,9 @@ class AnimalAIEnvironment(UnityEnvironment):
             Instructs the simulation to consider time between updates to always be constant, regardless of the actual frame rate.
         """
 
+        # TODO: Remove obsdict and have get_obs_dict return a new dict. Nothing reads this
+        # attribute (callers use the returned dict), and because get_obs_dict returns this same
+        # dict each time, reading a second agent overwrites the result returned for the first.
         self.obsdict = {
             "camera": [],
             "rays": [],
@@ -210,26 +213,48 @@ class AnimalAIEnvironment(UnityEnvironment):
         engine_configuration_channel.set_configuration(engine_configuration)
         return engine_configuration_channel
 
-    def get_obs_dict(self, obs) -> Dict:
-        """Parse the observation:
-        input: the observation directly from AAI
+    def get_obs_dict(self, obs, agent_index: int = 0) -> Dict:
+        """Parse the observation of one agent:
+        input: the observation directly from AAI (e.g. ``decision_steps.obs``), and which
+            agent's row to read (arenas can contain several agents; see ``get_obs_dicts``)
         output: a dictionary with keys: ["camera", "rays", "health", "velocity", "position"]
         """
+        self.obsdict.update(self._obs_dict_for_agent(obs, agent_index))
+        return self.obsdict
+
+    def get_obs_dicts(self, obs) -> List[Dict]:
+        """Parse the observations of every agent in a step.
+        input: the observation directly from AAI (e.g. ``decision_steps.obs``)
+        output: one dictionary per agent (see ``get_obs_dict``), in the same order as the
+            step's ``agent_id`` array
+        """
+        return [
+            self._obs_dict_for_agent(obs, agent_index) for agent_index in range(len(obs[0]))
+        ]
+
+    def _obs_dict_for_agent(self, obs, agent_index: int) -> Dict:
+        number_of_agents = len(obs[0])
+        if not 0 <= agent_index < number_of_agents:
+            raise IndexError(
+                f"agent_index {agent_index} is out of range: this step has {number_of_agents} agent(s)."
+            )
+
+        obs_dict: Dict = {"camera": [], "rays": []}
         intrinsicobs = 0
         if self.useCamera:
             intrinsicobs = intrinsicobs + 1
-            self.obsdict["camera"] = obs[0][0]
+            obs_dict["camera"] = obs[0][agent_index]
             if self.useRayCasts:
                 intrinsicobs = intrinsicobs + 1
-                self.obsdict["rays"] = obs[1][0]
+                obs_dict["rays"] = obs[1][agent_index]
         elif self.useRayCasts:
             intrinsicobs = intrinsicobs + 1
-            self.obsdict["rays"] = obs[0][0]
+            obs_dict["rays"] = obs[0][agent_index]
 
-        self.obsdict["health"] = obs[intrinsicobs][0][0]
-        self.obsdict["velocity"] = obs[intrinsicobs][0][1:4]
-        self.obsdict["position"] = obs[intrinsicobs][0][4:7]
-        return self.obsdict
+        obs_dict["health"] = obs[intrinsicobs][agent_index][0]
+        obs_dict["velocity"] = obs[intrinsicobs][agent_index][1:4]
+        obs_dict["position"] = obs[intrinsicobs][agent_index][4:7]
+        return obs_dict
 
     def reset(self, arenas_configurations="") -> None:
         if arenas_configurations != "":
