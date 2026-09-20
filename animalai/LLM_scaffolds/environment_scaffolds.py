@@ -130,11 +130,26 @@ class FrameByFrameScaffold(EnvironmentScaffold[np.ndarray]):
         self._done = DEFAULT_DONE
         self._done_reason: Optional[str] = None
 
-        self.behavior_name = list(self.env.behavior_specs.keys())[0]
+        behavior_names = list(self.env.behavior_specs.keys())
+        if len(behavior_names) != 1:
+            raise ValueError(
+                "FrameByFrameScaffold controls a single agent, but the environment has "
+                f"{len(behavior_names)} behaviors {behavior_names} (agents on different teams)."
+            )
+        self.behavior_name = behavior_names[0]
         self._collect_obs()
+
+    @staticmethod
+    def _check_single_agent(steps) -> None:
+        if len(steps) > 1:
+            raise ValueError(
+                "FrameByFrameScaffold controls a single agent, but the arena has "
+                f"{len(steps)} agents. Multi-agent arenas are not supported by the LLM scaffolds."
+            )
 
     def _collect_obs(self) -> np.ndarray:
         decision_steps, terminal_steps = self.env.get_steps(self.behavior_name)
+        self._check_single_agent(decision_steps)
         if len(terminal_steps) > 0:
             obs = _process_obs(terminal_steps.obs[0][0])
             self._done = True
@@ -175,6 +190,7 @@ class FrameByFrameScaffold(EnvironmentScaffold[np.ndarray]):
                 self._done = True
                 self._done_reason = DONE_REASON_NO_AGENTS
                 break
+            self._check_single_agent(decision_steps)
             discrete = np.array([[branch0, branch1]] * n_agents, dtype=np.int32)
             self.env.set_actions(self.behavior_name, ActionTuple(discrete=discrete))
             self.env.step()

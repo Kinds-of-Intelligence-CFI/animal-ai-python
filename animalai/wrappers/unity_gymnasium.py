@@ -90,7 +90,10 @@ class UnityToGymnasiumWrapper(gymnasium.Env):
         if len(self._env.behavior_specs) != 1:
             raise UnityGymnasiumException(
                 "There can only be one behavior in a UnityEnvironment "
-                "if it is wrapped in a gymnasium env."
+                "if it is wrapped in a gymnasium env, but found "
+                f"{list(self._env.behavior_specs.keys())}. In Animal-AI, agents on "
+                "different `teams` have different behaviors; gymnasium wrappers are "
+                "single-agent, so use the environment directly for multi-agent arenas."
             )
 
         self.name = list(self._env.behavior_specs.keys())[0]
@@ -320,7 +323,9 @@ class UnityToGymnasiumWrapper(gymnasium.Env):
     def _check_agents(n_agents: int) -> None:
         if n_agents > 1:
             raise UnityGymnasiumException(
-                f"There can only be one Agent in the environment but {n_agents} were detected."
+                f"There can only be one Agent in the environment but {n_agents} were detected. "
+                "Gymnasium wrappers are single-agent; for multi-agent arenas use the "
+                "environment directly (e.g. AnimalAIEnvironment.get_obs_dicts)."
             )
 
 

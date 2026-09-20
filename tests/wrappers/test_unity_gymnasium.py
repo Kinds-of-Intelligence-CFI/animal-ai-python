@@ -227,6 +227,18 @@ class TestResetStep(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 class TestMisc(unittest.TestCase):
+    def test_multiple_agents_raises(self):
+        with self.assertRaises(UnityGymnasiumException) as context:
+            UnityToGymnasiumWrapper(_make_vector_env(n_decision=2))
+        self.assertIn("single-agent", str(context.exception))
+
+    def test_multiple_behaviors_raises(self):
+        env = _make_vector_env()
+        env.behavior_specs["Brain?team=1"] = env.behavior_specs["Brain?team=0"]
+        with self.assertRaises(UnityGymnasiumException) as context:
+            UnityToGymnasiumWrapper(env)
+        self.assertIn("Brain?team=1", str(context.exception))
+
     def test_no_observations_raises(self):
         spec = _BehaviorSpec([], _ActionSpec())
         env = _FakeEnv(spec, _Steps(obs=[], reward=[0.0], n=1), _empty_terminal())

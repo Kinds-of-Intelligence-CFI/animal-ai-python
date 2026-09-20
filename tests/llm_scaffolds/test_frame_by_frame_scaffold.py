@@ -369,6 +369,22 @@ class TestDone(unittest.TestCase):
 # last_frame updates
 # ---------------------------------------------------------------------------
 
+class TestMultiAgent(unittest.TestCase):
+    def test_multiple_agents_raises(self):
+        env = _make_env()
+        two_agents = _make_decision_steps(_make_obs())
+        two_agents.__len__.return_value = 2
+        env.get_steps.return_value = (two_agents, _make_empty_terminal_steps())
+        with self.assertRaises(ValueError):
+            FrameByFrameScaffold(env)
+
+    def test_multiple_behaviors_raises(self):
+        env = _make_env()
+        env.behavior_specs = {"Brain?team=0": MagicMock(), "Brain?team=1": MagicMock()}
+        with self.assertRaises(ValueError):
+            FrameByFrameScaffold(env)
+
+
 class TestLastFrame(unittest.TestCase):
     def test_set_during_init(self):
         obs = _make_obs(0.5)
