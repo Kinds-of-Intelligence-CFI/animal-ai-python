@@ -29,7 +29,7 @@ BINARY_NAMES = {
     "MacOS": "MacOS.app",
 }
 
-MOST_RECENT_VERSION = "4.3.1"
+MOST_RECENT_VERSION = "4.4.0"
 CHECKSUMS = {
     "Windows": "sha256:7b46302d8b7edc26be944840ad5430e44d71bcb6d65abe14cf900cea3388188e",
     "Linux": "sha256:a30ee1af7a2a5bc38db4c570a273c772cc5ea390bbf3964f59caef7542e8c3e8",

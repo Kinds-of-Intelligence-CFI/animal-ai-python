@@ -44,7 +44,8 @@ Rays report 18 object types, including other agents (`RayCastObjects.AGENT`). `R
 asked for an object the environment's rays don't report.
 
 ## Version History
-* Unreleased
+* v6.2.0
+  + Downloads Animal-AI build 4.4.0 by default (the first with multi-agent support)
   + Multi-agent support: `AnimalAIEnvironment.get_obs_dict(obs, agent_index)` and `get_obs_dicts(obs)`,
     `stack_actions`, `RayCastObjects.AGENT`
   + Fixed `AAIActions(no_agents=N)` building a single discrete row for N > 1
