@@ -29,11 +29,11 @@ BINARY_NAMES = {
     "MacOS": "MacOS.app",
 }
 
-MOST_RECENT_VERSION = "4.4.0"
+MOST_RECENT_VERSION = "v4.4.0"
 CHECKSUMS = {
-    "Windows": "sha256:7b46302d8b7edc26be944840ad5430e44d71bcb6d65abe14cf900cea3388188e",
-    "Linux": "sha256:a30ee1af7a2a5bc38db4c570a273c772cc5ea390bbf3964f59caef7542e8c3e8",
-    "MacOS": "sha256:a0c305e0a93c521f9cad9768bb5d4697b8b476c052c5f29614e170b8b5ae3ac4",
+    "Windows": "sha256:4ddca5f7973a8f831ad782312390cfaf35622b6be8892c7b670490d4cbd55cc9",
+    "Linux": "sha256:9cb45af8042e3e8f6b38bf6efa050a808366821686ff460f9d9275a9fa1c6c84",
+    "MacOS": "sha256:437141bc9ac424e7e1afa5b827c825e99c57086e79bd9c34cd67da1558420322",
 }
 
 class DownloadError(Exception):
