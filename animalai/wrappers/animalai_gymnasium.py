@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Union
+from typing import Dict, List, Optional, Sequence, Union
 
 import numpy as np
 
@@ -14,6 +14,88 @@ from mlagents_envs.base_env import DecisionSteps, TerminalSteps
 
 from animalai.environment import AnimalAIEnvironment
 from animalai.wrappers.unity_gymnasium import UnityToGymnasiumWrapper
+
+
+def select_obs_keys(
+    unity_env: AnimalAIEnvironment,
+    *,
+    include_camera: Optional[bool] = None,
+    include_rays: Optional[bool] = None,
+    include_health: bool = True,
+    include_velocity: bool = True,
+    include_position: bool = True,
+) -> List[str]:
+    """Return the observation streams to expose, in their fixed order.
+
+    ``include_camera`` / ``include_rays`` set to ``None`` mean "include if the
+    environment produces it". ``True`` for a stream that the environment does
+    not produce raises ``ValueError``, as does a selection with no streams.
+    """
+    obs_keys: List[str] = []
+    if _resolve_stream(include_camera, unity_env.useCamera, "include_camera", "useCamera"):
+        obs_keys.append("camera")
+    if _resolve_stream(include_rays, unity_env.useRayCasts, "include_rays", "useRayCasts"):
+        obs_keys.append("rays")
+    if include_health:
+        obs_keys.append("health")
+    if include_velocity:
+        obs_keys.append("velocity")
+    if include_position:
+        obs_keys.append("position")
+    if not obs_keys:
+        raise ValueError(
+            "At least one observation must be selected, but all include_* "
+            "flags resolved to False."
+        )
+    return obs_keys
+
+
+def build_obs_spaces(
+    observation_specs: Sequence,
+    obs_keys: Sequence[str],
+    *,
+    env_camera: bool,
+    env_rays: bool,
+    uint8_visual: bool,
+) -> Dict[str, spaces.Box]:
+    """Build one ``Box`` per selected stream for a single agent.
+
+    ``env_camera`` / ``env_rays`` say which streams the environment produces.
+    They set the position of each stream in ``observation_specs``, which is
+    independent of the streams in ``obs_keys``.
+    """
+    idx = 0
+    cam_shape = ray_shape = None
+    if env_camera:
+        cam_shape = observation_specs[idx].shape
+        idx += 1
+    if env_rays:
+        ray_shape = observation_specs[idx].shape
+        idx += 1
+
+    builders = {
+        "camera": lambda: (
+            spaces.Box(0, 255, dtype=np.uint8, shape=cam_shape)
+            if uint8_visual
+            else spaces.Box(0, 1, dtype=np.float32, shape=cam_shape)
+        ),
+        "rays": lambda: spaces.Box(0, np.inf, dtype=np.float32, shape=ray_shape),
+        "health": lambda: spaces.Box(0, np.inf, dtype=np.float32, shape=()),
+        "velocity": lambda: spaces.Box(-np.inf, np.inf, dtype=np.float32, shape=(3,)),
+        "position": lambda: spaces.Box(-np.inf, np.inf, dtype=np.float32, shape=(3,)),
+    }
+    return {key: builders[key]() for key in obs_keys}
+
+
+def _resolve_stream(flag, produced, flag_name, env_flag_name) -> bool:
+    if flag is None:
+        return produced
+    if flag and not produced:
+        raise ValueError(
+            f"{flag_name}=True but the environment was created with "
+            f"{env_flag_name}=False, so it produces no such observation."
+        )
+    return bool(flag)
 
 
 class AnimalAIGymnasiumWrapper(UnityToGymnasiumWrapper):
@@ -66,68 +148,28 @@ class AnimalAIGymnasiumWrapper(UnityToGymnasiumWrapper):
         self._env_camera = unity_env.useCamera
         self._env_rays = unity_env.useRayCasts
 
-        self.useCamera = self._resolve_stream(
-            include_camera, self._env_camera, "include_camera", "useCamera"
+        self._obs_keys = select_obs_keys(
+            unity_env,
+            include_camera=include_camera,
+            include_rays=include_rays,
+            include_health=include_health,
+            include_velocity=include_velocity,
+            include_position=include_position,
         )
-        self.useRayCasts = self._resolve_stream(
-            include_rays, self._env_rays, "include_rays", "useRayCasts"
-        )
-
-        self._obs_keys: list = []
-        if self.useCamera:
-            self._obs_keys.append("camera")
-        if self.useRayCasts:
-            self._obs_keys.append("rays")
-        if include_health:
-            self._obs_keys.append("health")
-        if include_velocity:
-            self._obs_keys.append("velocity")
-        if include_position:
-            self._obs_keys.append("position")
-        if not self._obs_keys:
-            raise ValueError(
-                "At least one observation must be selected, but all include_* "
-                "flags resolved to False."
-            )
+        self.useCamera = "camera" in self._obs_keys
+        self.useRayCasts = "rays" in self._obs_keys
         self._single_obs = len(self._obs_keys) == 1
 
         super().__init__(unity_env, **kwargs)
 
-    @staticmethod
-    def _resolve_stream(flag, produced, flag_name, env_flag_name) -> bool:
-        if flag is None:
-            return produced
-        if flag and not produced:
-            raise ValueError(
-                f"{flag_name}=True but the environment was created with "
-                f"{env_flag_name}=False, so it produces no such observation."
-            )
-        return bool(flag)
-
     def _build_observation_space(self):
-        specs = self.group_spec.observation_specs
-        # Spec order follows what the env produces, not what we expose.
-        idx = 0
-        cam_shape = ray_shape = None
-        if self._env_camera:
-            cam_shape = specs[idx].shape
-            idx += 1
-        if self._env_rays:
-            ray_shape = specs[idx].shape
-            idx += 1
-
-        builders = {
-            "camera": lambda: (
-                spaces.Box(0, 255, dtype=np.uint8, shape=cam_shape)
-                if self.uint8_visual
-                else spaces.Box(0, 1, dtype=np.float32, shape=cam_shape)
-            ),
-            "rays": lambda: spaces.Box(0, np.inf, dtype=np.float32, shape=ray_shape),
-            "health": lambda: spaces.Box(0, np.inf, dtype=np.float32, shape=()),
-            "velocity": lambda: spaces.Box(-np.inf, np.inf, dtype=np.float32, shape=(3,)),
-            "position": lambda: spaces.Box(-np.inf, np.inf, dtype=np.float32, shape=(3,)),
-        }
-        obs_spaces = {key: builders[key]() for key in self._obs_keys}
+        obs_spaces = build_obs_spaces(
+            self.group_spec.observation_specs,
+            self._obs_keys,
+            env_camera=self._env_camera,
+            env_rays=self._env_rays,
+            uint8_visual=self.uint8_visual,
+        )
         if self._single_obs:
             return obs_spaces[self._obs_keys[0]]
         return spaces.Dict(obs_spaces)
