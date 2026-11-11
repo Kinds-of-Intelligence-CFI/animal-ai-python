@@ -17,13 +17,15 @@ except ImportError as exc:
         "Install it with: pip install animalai[gymnasium]"
     ) from exc
 
-from mlagents_envs.base_env import DecisionSteps, TerminalSteps
+from mlagents_envs.base_env import ActionTuple, DecisionSteps, TerminalSteps
 
 from animalai.environment import AnimalAIEnvironment
 from animalai.wrappers.animalai_gymnasium import build_obs_spaces, select_obs_keys
 from animalai.wrappers.unity_gymnasium import UnityGymnasiumException
 
 BatchedObservation = Union[np.ndarray, Dict[str, np.ndarray]]
+# (observations, rewards, terminated, truncated, info)
+StepResult = Tuple[BatchedObservation, np.ndarray, np.ndarray, np.ndarray, dict]
 
 
 class MultiAgentCore:
@@ -107,16 +109,85 @@ class MultiAgentCore:
 
     def reset(self) -> Tuple[BatchedObservation, dict]:
         """Return the observations of all agents at the start of the episode."""
-        return self._observations(self._decision_steps), {}
+        order = self._row_order(self._decision_steps)
+        return self._observations(self._decision_steps, order), {}
+
+    def step(self, actions) -> StepResult:
+        """Send one action per agent and return the result for each agent.
+
+        ``actions`` has shape ``(num_agents, 2)``, one row per agent in agent
+        order. The result is ``(observations, rewards, terminated, truncated,
+        info)``. The rewards and the two flags have shape ``(num_agents,)``.
+        All agents of an arena finish in the same step.
+        """
+        self._send_actions(actions)
+        self._env.step()
+        decision_steps, terminal_steps = self._env.get_steps(self.behavior_name)
+
+        if len(terminal_steps) > 0:
+            order = self._row_order(terminal_steps)
+            truncated = terminal_steps.interrupted[order].astype(np.bool_)
+            return self._result(terminal_steps, order, ~truncated, truncated)
+
+        order = self._row_order(decision_steps)
+        self._decision_steps = decision_steps
+        not_done = np.zeros(self.num_agents, dtype=np.bool_)
+        return self._result(decision_steps, order, not_done, not_done.copy())
+
+    def _send_actions(self, actions) -> None:
+        actions = np.asarray(actions)
+        expected_shape = (self.num_agents, *self.single_action_space.shape)
+        if actions.shape != expected_shape:
+            raise ValueError(
+                f"Expected actions with shape {expected_shape} (one row per "
+                f"agent), but got shape {actions.shape}."
+            )
+        if not np.issubdtype(actions.dtype, np.integer):
+            raise ValueError(f"Actions must be integers, but got dtype {actions.dtype}.")
+        for name, action in zip(self.agent_names, actions):
+            if not self.single_action_space.contains(action):
+                raise ValueError(
+                    f"The action {action.tolist()} of {name} is not in "
+                    f"{self.single_action_space}."
+                )
+
+        unity_rows = np.empty(expected_shape, dtype=np.int32)
+        unity_rows[self._row_order(self._decision_steps)] = actions
+        self._env.set_actions(self.behavior_name, ActionTuple(discrete=unity_rows))
+
+    def _result(
+        self,
+        steps: Union[DecisionSteps, TerminalSteps],
+        order: List[int],
+        terminated: np.ndarray,
+        truncated: np.ndarray,
+    ) -> StepResult:
+        rewards = steps.reward[order].astype(np.float32)
+        return self._observations(steps, order), rewards, terminated, truncated, {}
 
     def _row_order(self, steps: Union[DecisionSteps, TerminalSteps]) -> List[int]:
-        """The Unity row of each agent, in agent order."""
+        """The Unity row of each agent, in agent order.
+
+        Raises if the agents in ``steps`` are not exactly the agents that the
+        wrapper found at construction.
+        """
+        received = sorted(int(agent_id) for agent_id in steps.agent_id)
+        if received != list(self.agent_ids):
+            raise UnityGymnasiumException(
+                f"The agents changed. The wrapper expects the agent ids "
+                f"{list(self.agent_ids)}, but the {type(steps).__name__} from Unity "
+                f"has the agent ids {received}. The wrapper needs the same agents "
+                "in each step, and all agents must finish an episode together. A "
+                "probable cause is a configuration file in which the arenas have "
+                "different numbers of Agent items."
+            )
         row_of = steps.agent_id_to_index
         return [row_of[agent_id] for agent_id in self.agent_ids]
 
-    def _observations(self, steps: Union[DecisionSteps, TerminalSteps]) -> BatchedObservation:
+    def _observations(
+        self, steps: Union[DecisionSteps, TerminalSteps], order: List[int]
+    ) -> BatchedObservation:
         rows = self._env.get_obs_dicts(steps.obs)
-        order = self._row_order(steps)
         batch: Dict[str, np.ndarray] = {}
         for key in self._obs_keys:
             stacked = np.stack([rows[row][key] for row in order])

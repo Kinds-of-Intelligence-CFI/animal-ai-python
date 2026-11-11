@@ -96,6 +96,24 @@ def deciding(agents: Sequence[int], rewards: Optional[Sequence[float]] = None, *
     return decision_steps(agents, rewards, **obs_kwargs), terminal_steps(**obs_kwargs)
 
 
+def ending(
+    agents: Sequence[int],
+    rewards: Optional[Sequence[float]] = None,
+    interrupted: bool = False,
+    next_agents: Sequence[int] = (),
+    **obs_kwargs,
+) -> Exchange:
+    """An exchange in which the agents in ``agents`` finish their episode.
+
+    ``next_agents`` are the agents that request the first decision of the next
+    episode in the same exchange.
+    """
+    return (
+        decision_steps(next_agents, **obs_kwargs),
+        terminal_steps(agents, rewards, interrupted, **obs_kwargs),
+    )
+
+
 def silent(**obs_kwargs) -> Exchange:
     """An exchange with no agents at all."""
     return decision_steps(**obs_kwargs), terminal_steps(**obs_kwargs)
