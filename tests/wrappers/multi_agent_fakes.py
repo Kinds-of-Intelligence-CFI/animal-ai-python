@@ -165,3 +165,42 @@ class ScriptedAAIEnv(AnimalAIEnvironment):
 
     def close(self):
         self.closed = True
+
+
+class FactoryScriptedAAIEnv(ScriptedAAIEnv):
+    """A ScriptedAAIEnv with the constructor arguments that the vector factory gives.
+
+    It builds its own script, so it also works in a subprocess: each episode has two
+    steps, and the final exchange holds the start of the next episode. In instance
+    ``worker_id``, agent ``k`` gets the reward ``worker_id + k / 10`` in each step.
+    ``number_of_agents`` is a test-only argument.
+    """
+
+    instances: list = []
+
+    def __init__(
+        self,
+        *,
+        worker_id=0,
+        base_port=5005,
+        seed=0,
+        arenas_configurations="",
+        useCamera=True,
+        useRayCasts=True,
+        number_of_agents=2,
+        **extra,
+    ):
+        self.worker_id = worker_id
+        self.base_port = base_port
+        self.seed_value = seed
+        self.arenas_configurations = arenas_configurations
+        self.extra = extra
+        agents = list(range(number_of_agents))
+        permuted = agents[::-1]
+        obs_kwargs = {"useCamera": useCamera, "useRayCasts": useRayCasts}
+        episode = [
+            deciding(permuted, rewards=[worker_id + k / 10 for k in permuted], **obs_kwargs),
+            ending(agents, rewards=[worker_id + k / 10 for k in agents], next_agents=permuted, **obs_kwargs),
+        ]
+        super().__init__([deciding(agents, **obs_kwargs)] + episode * 10, useCamera=useCamera, useRayCasts=useRayCasts)
+        FactoryScriptedAAIEnv.instances.append(self)

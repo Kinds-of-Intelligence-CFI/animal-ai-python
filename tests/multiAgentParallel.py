@@ -6,13 +6,14 @@ import numpy as np
 from pettingzoo.test import parallel_api_test
 
 from animalai import AnimalAIEnvironment
-from animalai.wrappers import AnimalAIParallelEnv
+from animalai.wrappers import AnimalAIParallelEnv, make_animalai_multi_agent_vec_env
 
 ARENA = Path(__file__).parent / "test-Configs" / "multiAgentArena.yml"
 # The x position of each Agent item in multiAgentArena.yml
 SPAWN_X = {"agent_0": 10.0, "agent_1": 30.0}
 FORWARDS = [1, 0]
 NOOP = [0, 0]
+ENV_KWARGS = {"useCamera": True, "resolution": 32, "useRayCasts": True, "raysPerSide": 2}
 
 
 def horizontal_position(obs: dict, agent: str) -> np.ndarray:
@@ -65,21 +66,53 @@ def check_episodes(env: AnimalAIParallelEnv, number_of_episodes: int) -> None:
         print(f"  episode {episode}: {steps} steps, rewards {episode_rewards}")
 
 
+def check_vector_env(file_name, episodes_per_instance: int) -> None:
+    """Two Unity instances: arrays have an instance dimension, then an agent dimension."""
+    number_of_instances = 2
+    spawn_x = list(SPAWN_X.values())
+    venv = make_animalai_multi_agent_vec_env(
+        number_of_instances,
+        base_port=5005 + random.randint(0, 1000),
+        arenas_configurations=str(ARENA),
+        env_kwargs={**ENV_KWARGS, "file_name": file_name},
+    )
+    try:
+        obs, _ = venv.reset()
+        assert obs["position"].shape == (number_of_instances, len(spawn_x), 3)
+        assert np.allclose(obs["position"][:, :, 0], spawn_x, atol=1.0), "agents are not at their Agent items"
+
+        finished = np.zeros(number_of_instances, dtype=int)
+        just_finished = np.zeros(number_of_instances, dtype=bool)
+        steps = 0
+        while finished.min() < episodes_per_instance:
+            obs, rewards, terminations, truncations, infos = venv.step(venv.action_space.sample())
+            steps += 1
+            assert infos["agent_rewards"].shape == (number_of_instances, len(spawn_x))
+            assert np.allclose(rewards, infos["agent_rewards"].sum(axis=1), atol=1e-5)
+            # The step after an episode end is the autoreset step of that instance
+            for instance in np.flatnonzero(just_finished):
+                assert np.allclose(obs["position"][instance, :, 0], spawn_x, atol=1.0), "autoreset did not restart the arena"
+                assert rewards[instance] == 0.0
+            just_finished = terminations | truncations
+            finished += just_finished
+        print(f"  {steps} steps, episodes finished by each instance: {finished.tolist()}")
+    finally:
+        venv.close()
+
+
 def main():
     """
-    Manual test of AnimalAIParallelEnv with a real build that supports several agents.
+    Manual test of the multi-agent wrappers with a real build that supports several agents.
     Give the path of the executable as the first argument. With no argument, the
     environment finds or downloads the executable.
     """
+    file_name = sys.argv[1] if len(sys.argv) > 1 else None
     env = AnimalAIParallelEnv(
         AnimalAIEnvironment(
-            file_name=sys.argv[1] if len(sys.argv) > 1 else None,
+            file_name=file_name,
             arenas_configurations=str(ARENA),
             base_port=5005 + random.randint(0, 1000),
-            useCamera=True,
-            resolution=32,
-            useRayCasts=True,
-            raysPerSide=2,
+            **ENV_KWARGS,
         )
     )
     try:
@@ -98,11 +131,14 @@ def main():
 
         print("Check 4: PettingZoo parallel API test")
         parallel_api_test(env, num_cycles=50)
-
-        print("All checks passed")
     finally:
         env.close()
         print("Environment Closed")
+
+    print("Check 5: vector env of two Unity instances")
+    check_vector_env(file_name, episodes_per_instance=2)
+
+    print("All checks passed")
 
 
 if __name__ == "__main__":

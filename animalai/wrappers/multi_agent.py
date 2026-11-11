@@ -278,7 +278,8 @@ class AnimalAIAgentStackEnv(gymnasium.Env):
         if seed is not None:
             self.action_space.seed(seed)
         observations, _ = self._core.reset(options=options)
-        return observations, {}
+        # The key is in each info, so a vector env always has it for all instances.
+        return observations, {"agent_rewards": np.zeros(self.num_agents, dtype=np.float32)}
 
     def step(self, actions) -> Tuple[BatchedObservation, float, bool, bool, dict]:
         """Send one action row per agent. ``actions`` has shape ``(num_agents, 2)``."""

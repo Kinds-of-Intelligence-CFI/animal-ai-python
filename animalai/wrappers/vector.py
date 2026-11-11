@@ -25,6 +25,7 @@ except ImportError as exc:
 
 from animalai.environment import AnimalAIEnvironment
 from animalai.wrappers.animalai_gymnasium import AnimalAIGymnasiumWrapper
+from animalai.wrappers.multi_agent import AnimalAIAgentStackEnv
 
 # Owned by the factory; supplying them via env_kwargs would clash with the
 # per-environment values the factory assigns.
@@ -45,12 +46,14 @@ def make_animalai_env_fns(
     serialize_launch: bool = True,
     launch_lock_timeout: float = 300.0,
     launch_lock_path: Optional[str] = None,
-) -> List[Callable[[], AnimalAIGymnasiumWrapper]]:
+    wrapper_cls: Callable[..., "gymnasium.Env"] = AnimalAIGymnasiumWrapper,
+) -> List[Callable[[], "gymnasium.Env"]]:
     """Build ``num_envs`` zero-argument env factories ("thunks").
 
     Each thunk constructs an ``AnimalAIEnvironment`` with a unique
     ``worker_id`` (``worker_id_start + i``) and ``seed`` (``seed + i``), then
-    wraps it in an :class:`AnimalAIGymnasiumWrapper`. The thunks are lazy:
+    wraps it in ``wrapper_cls`` (:class:`AnimalAIGymnasiumWrapper` by default).
+    The thunks are lazy:
     nothing launches Unity until a thunk is called, which is what lets a vector
     env decide when (and, for async, in which process) to construct each env.
 
@@ -94,6 +97,10 @@ def make_animalai_env_fns(
         Path of the lock file shared by this batch's thunks. Defaults to
         ``<tempdir>/animalai_launch_<base_port>.lock``; keying on ``base_port``
         lets independent vector envs launch without blocking each other.
+    wrapper_cls : callable
+        The wrapper that each thunk puts around its ``AnimalAIEnvironment``.
+        It is called as ``wrapper_cls(env, **wrapper_kwargs)`` and must return
+        a ``gymnasium.Env``.
     """
     if num_envs < 1:
         raise ValueError(f"num_envs must be >= 1, got {num_envs}.")
@@ -115,8 +122,8 @@ def make_animalai_env_fns(
             tempfile.gettempdir(), f"animalai_launch_{base_port}.lock"
         )
 
-    def _make_thunk(index: int) -> Callable[[], AnimalAIGymnasiumWrapper]:
-        def _thunk() -> AnimalAIGymnasiumWrapper:
+    def _make_thunk(index: int) -> Callable[[], "gymnasium.Env"]:
+        def _thunk() -> "gymnasium.Env":
             launch_guard = (
                 FileLock(launch_lock_path, timeout=launch_lock_timeout)
                 if serialize_launch
@@ -130,7 +137,7 @@ def make_animalai_env_fns(
                     arenas_configurations=arena_configs[index],
                     **env_kwargs,
                 )
-                return AnimalAIGymnasiumWrapper(env, **wrapper_kwargs)
+                return wrapper_cls(env, **wrapper_kwargs)
 
         return _thunk
 
@@ -172,6 +179,47 @@ def make_animalai_vec_env(
     if vectorization_mode == "async":
         return gymnasium.vector.AsyncVectorEnv(env_fns)
     return gymnasium.vector.SyncVectorEnv(env_fns)
+
+
+def make_animalai_multi_agent_vec_env(
+    num_envs: int,
+    *,
+    vectorization_mode: str = "async",
+    **kwargs: Any,
+) -> "gymnasium.vector.VectorEnv":
+    """Build a Gymnasium vector env of ``num_envs`` multi-agent Animal-AI envs.
+
+    Each environment is one Unity instance with M agents, wrapped in an
+    :class:`AnimalAIAgentStackEnv`. All instances must have the same number of
+    agents. The arrays have an instance dimension, then an agent dimension:
+
+    - observations: ``(num_envs, M, ...)`` for each stream
+    - actions: ``(num_envs, M, 2)``
+    - rewards: ``(num_envs,)``, the sum of the agent rewards of each instance
+    - ``infos["agent_rewards"]``: ``(num_envs, M)``, the reward of each agent
+    - terminations and truncations: ``(num_envs,)``, because the agents of an
+      instance finish together
+
+    The vector env resets an instance in the step after its episode ends
+    (Gymnasium next-step autoreset). That step ignores the actions for the
+    instance and gives it rewards of zero. No arena is skipped.
+
+    Parameters
+    ----------
+    num_envs : int
+        Number of Unity instances to run in parallel.
+    vectorization_mode : {"sync", "async"}
+        See :func:`make_animalai_vec_env`.
+    **kwargs
+        Forwarded to :func:`make_animalai_env_fns`, except ``wrapper_cls``.
+        ``wrapper_kwargs`` go to each :class:`AnimalAIAgentStackEnv`.
+    """
+    return make_animalai_vec_env(
+        num_envs,
+        vectorization_mode=vectorization_mode,
+        wrapper_cls=AnimalAIAgentStackEnv,
+        **kwargs,
+    )
 
 
 def _resolve_arena_configs(arenas_configurations: ArenaConfig, num_envs: int) -> List[str]:
