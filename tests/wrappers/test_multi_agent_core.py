@@ -341,5 +341,156 @@ class TestActionChecks(unittest.TestCase):
         self._assert_actions_rejected([[0.5, 0.0], [1.0, 1.0]])
 
 
+class TestResetAfterEpisodeEnd(unittest.TestCase):
+    def test_uses_the_next_episode_from_the_final_exchange(self):
+        env = ScriptedAAIEnv([deciding([0, 1]), ending([0, 1], next_agents=[1, 0])])
+        core = MultiAgentCore(env)
+        core.step([NOOP, NOOP])
+
+        obs, _ = core.reset()
+
+        env.reset.assert_not_called()
+        self.assertEqual(env.step.call_count, 1)
+        np.testing.assert_allclose(obs["health"], [100.0, 99.0])
+
+    def test_steps_unity_one_time_when_the_final_exchange_has_no_next_episode(self):
+        env = ScriptedAAIEnv([deciding([0, 1]), ending([0, 1]), deciding([1, 0])])
+        core = MultiAgentCore(env)
+        core.step([NOOP, NOOP])
+
+        obs, _ = core.reset()
+
+        env.reset.assert_not_called()
+        self.assertEqual(env.step.call_count, 2)
+        env.set_actions.assert_called_once()
+        np.testing.assert_allclose(obs["health"], [100.0, 99.0])
+
+    def test_raises_when_no_agent_arrives_after_one_unity_step(self):
+        env = ScriptedAAIEnv([deciding([0, 1]), ending([0, 1]), silent(), deciding([0, 1])])
+        core = MultiAgentCore(env)
+        core.step([NOOP, NOOP])
+
+        with self.assertRaises(UnityGymnasiumException):
+            core.reset()
+
+        self.assertEqual(env.step.call_count, 2)
+
+    def test_raises_when_the_next_episode_has_other_agents(self):
+        env = ScriptedAAIEnv([deciding([0, 1]), ending([0, 1], next_agents=[0])])
+        core = MultiAgentCore(env)
+        core.step([NOOP, NOOP])
+
+        with self.assertRaises(UnityGymnasiumException):
+            core.reset()
+
+    def test_step_after_reset_uses_the_row_order_of_the_new_episode(self):
+        env = ScriptedAAIEnv([deciding([0, 1]), ending([0, 1], next_agents=[1, 0]), deciding([0, 1])])
+        core = MultiAgentCore(env)
+        core.step([NOOP, NOOP])
+        core.reset()
+
+        core.step([[1, 0], [2, 0]])
+
+        np.testing.assert_array_equal(_sent_actions(env)[1].discrete, [[2, 0], [1, 0]])
+
+    def test_two_episodes_make_no_unity_reset(self):
+        env = ScriptedAAIEnv(
+            [deciding([0, 1]), deciding([0, 1]), ending([0, 1]), deciding([0, 1]), ending([0, 1], next_agents=[0, 1])]
+        )
+        core = MultiAgentCore(env)
+
+        core.reset()
+        core.step([NOOP, NOOP])
+        _, _, first_end, _, _ = core.step([NOOP, NOOP])
+        core.reset()
+        _, _, second_end, _, _ = core.step([NOOP, NOOP])
+        core.reset()
+
+        self.assertTrue(first_end.all())
+        self.assertTrue(second_end.all())
+        env.reset.assert_not_called()
+
+
+class TestStepAfterEpisodeEnd(unittest.TestCase):
+    def test_step_before_reset_raises_and_sends_no_actions(self):
+        env = ScriptedAAIEnv([deciding([0, 1]), ending([0, 1]), deciding([0, 1])])
+        core = MultiAgentCore(env)
+        core.step([NOOP, NOOP])
+
+        with self.assertRaises(UnityGymnasiumException) as context:
+            core.step([NOOP, NOOP])
+
+        self.assertIn("reset", str(context.exception))
+        env.set_actions.assert_called_once()
+        self.assertEqual(env.step.call_count, 1)
+
+
+class TestResetDuringAnEpisode(unittest.TestCase):
+    def test_resets_unity_one_time(self):
+        env = ScriptedAAIEnv([deciding([0, 1]), deciding([0, 1]), deciding([1, 0])])
+        core = MultiAgentCore(env)
+        core.step([NOOP, NOOP])
+
+        obs, _ = core.reset()
+
+        env.reset.assert_called_once_with()
+        np.testing.assert_allclose(obs["health"], [100.0, 99.0])
+
+    def test_second_reset_with_no_step_between_makes_no_unity_reset(self):
+        env = ScriptedAAIEnv([deciding([0, 1]), deciding([0, 1]), deciding([0, 1])])
+        core = MultiAgentCore(env)
+        core.step([NOOP, NOOP])
+        core.reset()
+
+        core.reset()
+
+        env.reset.assert_called_once_with()
+
+    def test_raises_when_the_agents_changed(self):
+        env = ScriptedAAIEnv([deciding([0, 1]), deciding([0, 1]), deciding([0])])
+        core = MultiAgentCore(env)
+        core.step([NOOP, NOOP])
+
+        with self.assertRaises(UnityGymnasiumException):
+            core.reset()
+
+
+class TestArenaSwap(unittest.TestCase):
+    def test_arena_config_is_sent_to_unity(self):
+        env = ScriptedAAIEnv([deciding([0, 1]), deciding([1, 0])])
+        core = MultiAgentCore(env)
+
+        obs, _ = core.reset(options={"arena_config": "other.yml"})
+
+        env.reset.assert_called_once_with(arenas_configurations="other.yml")
+        np.testing.assert_allclose(obs["health"], [100.0, 99.0])
+
+    def test_arena_config_resets_unity_after_an_episode_end(self):
+        env = ScriptedAAIEnv([deciding([0, 1]), ending([0, 1], next_agents=[0, 1]), deciding([0, 1])])
+        core = MultiAgentCore(env)
+        core.step([NOOP, NOOP])
+
+        core.reset(options={"arena_config": "other.yml"})
+
+        env.reset.assert_called_once_with(arenas_configurations="other.yml")
+
+    def test_options_with_no_arena_config_make_no_unity_reset(self):
+        env = ScriptedAAIEnv([deciding([0, 1])])
+        core = MultiAgentCore(env)
+
+        core.reset(options={})
+
+        env.reset.assert_not_called()
+
+    def test_raises_when_the_new_arena_has_another_number_of_agents(self):
+        env = ScriptedAAIEnv([deciding([0, 1]), deciding([0, 1, 2])])
+        core = MultiAgentCore(env)
+
+        with self.assertRaises(UnityGymnasiumException) as context:
+            core.reset(options={"arena_config": "three_agents.yml"})
+
+        self.assertIn("Agent items", str(context.exception))
+
+
 if __name__ == "__main__":
     unittest.main()

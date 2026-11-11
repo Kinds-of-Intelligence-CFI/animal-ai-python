@@ -106,10 +106,32 @@ class MultiAgentCore:
         )
         self.num_agents = len(self.agent_ids)
         self.agent_names: List[str] = [f"agent_{k}" for k in range(self.num_agents)]
+        self._episode_started = False
+        self._episode_over = False
 
-    def reset(self) -> Tuple[BatchedObservation, dict]:
-        """Return the observations of all agents at the start of the episode."""
+    def reset(self, *, options: Optional[dict] = None) -> Tuple[BatchedObservation, dict]:
+        """Return the observations of all agents at the start of an episode.
+
+        Unity moves on to the next arena each time it resets, and it resets
+        itself when an episode ends. ``reset`` thus resets Unity only if the
+        caller stops an episode before its end, or gives a new configuration
+        file in ``options={"arena_config": path}``.
+        """
+        arena_config = options.get("arena_config") if options else None
+        if arena_config is not None:
+            self._env.reset(arenas_configurations=arena_config)
+            self._read_decision_steps()
+        elif self._episode_over:
+            if len(self._decision_steps) == 0:
+                self._env.step()
+                self._read_decision_steps()
+        elif self._episode_started:
+            self._env.reset()
+            self._read_decision_steps()
+
         order = self._row_order(self._decision_steps)
+        self._episode_over = False
+        self._episode_started = False
         return self._observations(self._decision_steps, order), {}
 
     def step(self, actions) -> StepResult:
@@ -120,19 +142,31 @@ class MultiAgentCore:
         info)``. The rewards and the two flags have shape ``(num_agents,)``.
         All agents of an arena finish in the same step.
         """
+        if self._episode_over:
+            raise UnityGymnasiumException(
+                "The episode is finished. Call reset() before the next step."
+            )
         self._send_actions(actions)
         self._env.step()
         decision_steps, terminal_steps = self._env.get_steps(self.behavior_name)
 
         if len(terminal_steps) > 0:
             order = self._row_order(terminal_steps)
+            # These decision steps are the start of the next episode, if Unity
+            # sent it in the same exchange. reset() reads them.
+            self._decision_steps = decision_steps
+            self._episode_over = True
             truncated = terminal_steps.interrupted[order].astype(np.bool_)
             return self._result(terminal_steps, order, ~truncated, truncated)
 
         order = self._row_order(decision_steps)
         self._decision_steps = decision_steps
+        self._episode_started = True
         not_done = np.zeros(self.num_agents, dtype=np.bool_)
         return self._result(decision_steps, order, not_done, not_done.copy())
+
+    def _read_decision_steps(self) -> None:
+        self._decision_steps, _ = self._env.get_steps(self.behavior_name)
 
     def _send_actions(self, actions) -> None:
         actions = np.asarray(actions)
