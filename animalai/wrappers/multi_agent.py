@@ -108,6 +108,8 @@ class MultiAgentCore:
         self.agent_names: List[str] = [f"agent_{k}" for k in range(self.num_agents)]
         self._episode_started = False
         self._episode_over = False
+        # The latest camera frame of each agent, or None if the camera is not selected.
+        self.camera_frames: Optional[np.ndarray] = None
 
     def reset(self, *, options: Optional[dict] = None) -> Tuple[BatchedObservation, dict]:
         """Return the observations of all agents at the start of an episode.
@@ -164,6 +166,10 @@ class MultiAgentCore:
         self._episode_started = True
         not_done = np.zeros(self.num_agents, dtype=np.bool_)
         return self._result(decision_steps, order, not_done, not_done.copy())
+
+    def close(self) -> None:
+        """Close the Unity environment."""
+        self._env.close()
 
     def _read_decision_steps(self) -> None:
         self._decision_steps, _ = self._env.get_steps(self.behavior_name)
@@ -229,6 +235,7 @@ class MultiAgentCore:
                 batch[key] = (255.0 * stacked).astype(np.uint8)
             else:
                 batch[key] = stacked.astype(np.float32, copy=False)
+        self.camera_frames = batch.get("camera")
         if self._single_obs:
             return batch[self._obs_keys[0]]
         return batch
