@@ -5,12 +5,14 @@ An arena can contain several ``Agent`` items. ``MultiAgentCore`` reads one such
 agent order that does not change.
 """
 
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
 try:
+    import gymnasium
     from gymnasium import spaces
+    from gymnasium.vector.utils import batch_space
 except ImportError as exc:
     raise ImportError(
         "The gymnasium wrappers require the optional 'gymnasium' extra. "
@@ -239,3 +241,57 @@ class MultiAgentCore:
         if self._single_obs:
             return batch[self._obs_keys[0]]
         return batch
+
+
+class AnimalAIAgentStackEnv(gymnasium.Env):
+    """A ``gymnasium.Env`` in which each array has a leading agent dimension.
+
+    It is the building block of ``make_animalai_multi_agent_vec_env``. For one
+    Unity instance, ``AnimalAIParallelEnv`` is the recommended wrapper.
+
+    The observation space and the action space are the spaces of one agent with
+    ``num_agents`` rows, in the order of the ``Agent`` items of the arena. The
+    keyword arguments (``include_*``, ``uint8_visual``) are the same as for
+    ``AnimalAIGymnasiumWrapper``.
+
+    A ``gymnasium.Env`` has one reward and one pair of flags for each step:
+    - The reward is the sum of the agent rewards. ``info["agent_rewards"]`` has
+      the reward of each agent.
+    - ``terminated`` and ``truncated`` are single values, because all agents of
+      an arena finish in the same step.
+    """
+
+    metadata = {"render_modes": ["rgb_array"]}
+
+    def __init__(self, unity_env: AnimalAIEnvironment, **core_kwargs: Any):
+        self._core = MultiAgentCore(unity_env, **core_kwargs)
+        self.num_agents = self._core.num_agents
+        self.observation_space = batch_space(self._core.single_observation_space, self.num_agents)
+        self.action_space = batch_space(self._core.single_action_space, self.num_agents)
+        self.render_mode = "rgb_array"
+
+    def reset(
+        self, *, seed: Optional[int] = None, options: Optional[dict] = None
+    ) -> Tuple[BatchedObservation, dict]:
+        """Start an episode. ``seed`` seeds the action space only."""
+        super().reset(seed=seed)
+        if seed is not None:
+            self.action_space.seed(seed)
+        observations, _ = self._core.reset(options=options)
+        return observations, {}
+
+    def step(self, actions) -> Tuple[BatchedObservation, float, bool, bool, dict]:
+        """Send one action row per agent. ``actions`` has shape ``(num_agents, 2)``."""
+        observations, rewards, terminated, truncated, _ = self._core.step(actions)
+        info = {"agent_rewards": rewards}
+        return observations, float(rewards.sum()), bool(terminated.any()), bool(truncated.any()), info
+
+    def render(self) -> Optional[np.ndarray]:
+        """Return the latest camera frame of the first agent, or None if the camera is not selected."""
+        if self._core.camera_frames is None:
+            return None
+        return self._core.camera_frames[0]
+
+    def close(self) -> None:
+        """Close the Unity environment."""
+        self._core.close()
