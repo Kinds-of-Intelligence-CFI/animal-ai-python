@@ -3,8 +3,10 @@ __all__ = [
     "UnityGymnasiumException",
     "ActionFlattener",
     "AnimalAIGymnasiumWrapper",
+    "AnimalAIParallelEnv",
     "make_animalai_env_fns",
     "make_animalai_vec_env",
+    "make_animalai_multi_agent_vec_env",
 ]
 
 
@@ -17,7 +19,15 @@ def __getattr__(name):
         from animalai.wrappers.animalai_gymnasium import AnimalAIGymnasiumWrapper
 
         return AnimalAIGymnasiumWrapper
-    if name in ("make_animalai_env_fns", "make_animalai_vec_env"):
+    if name == "AnimalAIParallelEnv":
+        from animalai.wrappers.animalai_pettingzoo import AnimalAIParallelEnv
+
+        return AnimalAIParallelEnv
+    if name in (
+        "make_animalai_env_fns",
+        "make_animalai_vec_env",
+        "make_animalai_multi_agent_vec_env",
+    ):
         from animalai.wrappers import vector
 
         return getattr(vector, name)

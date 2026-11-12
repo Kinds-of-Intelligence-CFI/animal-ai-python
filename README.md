@@ -36,9 +36,56 @@ for agent_id, obs in zip(decision_steps.agent_id, env.get_obs_dicts(decision_ste
 env.set_actions(behavior, stack_actions([actions.FORWARDS for _ in decision_steps.agent_id]))
 ```
 
-Agents in an arena finish their episodes together. The gymnasium wrappers and LLM scaffolds are
-single-agent and raise an error for multi-agent arenas, and play mode (`play=True`) supports one agent
-only. See `tests/multiAgent.py` for a complete example.
+Agents in an arena finish their episodes together. Play mode (`play=True`) and the LLM scaffolds support
+one agent only. See `tests/multiAgent.py` for a complete example of this direct interface.
+
+### Wrappers for several agents
+
+`AnimalAIParallelEnv` is a [PettingZoo](https://pettingzoo.farama.org/api/parallel/) `ParallelEnv` designed for when you have multiple agents in the environment but only 1 environment running at a time. The following is an example of how to use this wrapper:
+
+```python
+from animalai import AnimalAIEnvironment
+from animalai.wrappers import AnimalAIParallelEnv
+
+env = AnimalAIParallelEnv(AnimalAIEnvironment(arenas_configurations="multiAgentArena.yml", useRayCasts=True))
+obs, infos = env.reset()
+while env.agents:
+    actions = {agent: env.action_space(agent).sample() for agent in env.agents}
+    obs, rewards, terminations, truncations, infos = env.step(actions)
+env.close()
+```
+
+`make_animalai_multi_agent_vec_env` is used for when you want to use multiple agent in multiple concurrent environments, particular useful when trying to speed up training. Rather than addressing agents through a dict this wrapper stacks the agents and environments into `(M,N,.....)` where `M` is the number of environments and `N` is the number of agents. The following is an example of how to use the wrapper:
+
+```python
+from animalai.wrappers import make_animalai_multi_agent_vec_env
+
+venv = make_animalai_multi_agent_vec_env(
+    4, arenas_configurations="multiAgentArena.yml", env_kwargs={"useRayCasts": True}
+)
+obs, infos = venv.reset()  # obs["position"].shape == (4, number_of_agents, 3)
+obs, rewards, terminations, truncations, infos = venv.step(venv.action_space.sample())
+# rewards.shape == (4,): the sum of the agent rewards of each instance
+# infos["agent_rewards"].shape == (4, number_of_agents): the reward of each agent
+venv.close()
+```
+
+These rules apply to the two wrappers:
+
+- The agents are `agent_0`, `agent_1`, ... in the order of the `Agent` items of the arena.
+- Each agent has the same observations and actions as with `AnimalAIGymnasiumWrapper`. The `include_*` and
+  `uint8_visual` arguments are the same.
+- All agents must be on one team. An arena with more than one team raises an error. (worth noting that this means a team in the sense that they have the same action and observation spaces not that they are working collaboratively on the task.)
+- The number of agents must not change. If a later arena has a different number of `Agent` items, the
+  wrapper raises an error.
+- Unity builds the next arena when an episode ends. `reset()` after an episode end does not reset Unity, so
+  no arena is skipped.
+- `reset(options={"arena_config": path})` loads a new configuration file.
+- `reset(seed=...)` seeds the action space only. The seed of Unity is set when you create the
+  `AnimalAIEnvironment`.
+- The vector env resets an instance in the step after its episode ends. That step ignores the actions for
+  that instance and gives it rewards of zero.
+
 
 Rays report 18 object types, including other agents (`RayCastObjects.AGENT`). `RayCastParser` raises if
 asked for an object the environment's rays don't report.
@@ -51,6 +98,10 @@ asked for an object the environment's rays don't report.
   + Fixed `AAIActions(no_agents=N)` building a single discrete row for N > 1
   + `RayCastParser` raises for objects the environment's rays don't report (previously returned zeros)
   + Gymnasium wrappers and `FrameByFrameScaffold` give clear errors for multi-agent arenas
+  + Added `AnimalAIParallelEnv`, a PettingZoo `ParallelEnv` for arenas with several agents
+  + Added `make_animalai_multi_agent_vec_env` for several Unity instances with several agents each
+  + `make_animalai_env_fns` accepts a `wrapper_cls` argument
+  + The `gymnasium` extra now installs `pettingzoo`
 * v6.1.3
   + Added UnityToGymnasium and AnimalAIGymnasiumWrapper wrappers  
   + Added make_animalai_vec_env / make_animalai_env_fns helpers for vectorised (parallel) environments  
